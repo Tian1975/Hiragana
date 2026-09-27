@@ -4,28 +4,39 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
-<title>Laboratori de traç</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hiragana">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2B4A85">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<title>Hiragana al dit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 :root{
   --paper:#F1F3F2; --surface:#FFFFFF; --sunk:#E6EAE9; --ink:#18202B; --muted:#5A6472; --line:#D3D9DD;
   --accent:#2B4A85; --accent-soft:#DCE4F3; --on-accent:#FFFFFF;
   --guide:#DB8C96; --guide-soft:rgba(219,140,150,.55);
-  --ok:#2C7650; --ok-soft:#DAEEE2; --bad:#B0412D; --bad-soft:#F6DFD8; --warn:#9A6A00; --warn-soft:#F7EBC6;
-  --kana:"Klee One","Hiragino Mincho ProN",serif;
+  --ok:#2C7650; --ok-soft:#DAEEE2; --bad:#B8402C; --bad-soft:#F6DFD8; --warn:#C98A0B; --warn-soft:#F7EACB;
+  --hot:#C8553D; --ghost:rgba(24,32,43,.13);
+  --kana-std:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif; --kana-std-w:500;
+  --kana-text:"Klee One","Hiragino Mincho ProN","Yu Mincho",serif; --kana-text-w:600;
+  --kana:var(--kana-std); --kana-w:var(--kana-std-w);
   --ui:"Zen Kaku Gothic New","Hiragino Sans",-apple-system,system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
+:root[data-font="text"]{ --kana:var(--kana-text); --kana-w:var(--kana-text-w); }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
     --paper:#10141C; --surface:#181E29; --sunk:#0C1017; --ink:#E7EBF1; --muted:#98A2B2; --line:#2A3242;
     --accent:#93AEEA; --accent-soft:#223052; --on-accent:#0E1422;
     --guide:#8A5059; --guide-soft:rgba(160,95,105,.6);
-    --ok:#63C08E; --ok-soft:#163224; --bad:#EE8573; --bad-soft:#3A1F1A; --warn:#E8BE55; --warn-soft:#3A3014;
+    --ok:#63C08E; --ok-soft:#163224; --bad:#EE8573; --bad-soft:#3A1F1A; --warn:#E8B04A; --warn-soft:#382B12;
+    --hot:#EE8F72; --ghost:rgba(231,235,241,.16);
   }
 }
 :root[data-theme="dark"]{
@@ -33,185 +44,520 @@
   --paper:#10141C; --surface:#181E29; --sunk:#0C1017; --ink:#E7EBF1; --muted:#98A2B2; --line:#2A3242;
   --accent:#93AEEA; --accent-soft:#223052; --on-accent:#0E1422;
   --guide:#8A5059; --guide-soft:rgba(160,95,105,.6);
-  --ok:#63C08E; --ok-soft:#163224; --bad:#EE8573; --bad-soft:#3A1F1A; --warn:#E8BE55; --warn-soft:#3A3014;
+  --ok:#63C08E; --ok-soft:#163224; --bad:#EE8573; --bad-soft:#3A1F1A; --warn:#E8B04A; --warn-soft:#382B12;
+  --hot:#EE8F72; --ghost:rgba(231,235,241,.16);
 }
+[hidden]{display:none!important}
 html,body{background:var(--paper);color:var(--ink)}
 body{font-family:var(--ui);font-size:15px;line-height:1.5;padding-inline:16px;-webkit-tap-highlight-color:transparent}
-.app{max-width:560px;margin:0 auto;padding-block:14px 40px}
-button,select{font:inherit;color:inherit}
+.app{max-width:560px;margin:0 auto;padding-block:14px calc(92px + env(safe-area-inset-bottom,0px))}
+button,input{font:inherit;color:inherit}
 button{cursor:pointer}
-button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-h1{margin:0;font-size:20px;font-weight:700}
-.sub{margin:2px 0 16px;color:var(--muted);font-size:13px}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--sunk);border-radius:12px;padding:4px;margin-bottom:16px}
-.seg button{border:none;background:none;border-radius:9px;padding:9px;font-weight:700;font-size:14px;color:var(--muted)}
-.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink)}
-.bar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-.bar select{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 10px;font-size:15px}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 13px;font-weight:500;white-space:nowrap}
-.primary{border:none;background:var(--accent);color:var(--on-accent);border-radius:12px;padding:13px;font-weight:700;font-size:15px;width:100%}
-.target{display:flex;align-items:baseline;justify-content:center;gap:12px;margin:2px 0 10px}
-.target .ro{font-family:var(--mono);font-weight:600;font-size:40px;line-height:1.1}
-.target .hint{color:var(--muted);font-size:13px}
-.pad{position:relative;width:100%;max-width:320px;aspect-ratio:1/1;margin:0 auto;background:var(--surface);border:1.5px solid var(--guide);border-radius:4px;overflow:hidden}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kg{font-family:var(--kana);font-weight:var(--kana-w)}
+
+.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.mark{flex:none;width:46px;height:46px;display:grid;place-items:center;font-family:var(--kana-text);font-weight:600;font-size:30px;line-height:1;color:var(--accent);border:1.5px solid var(--guide);border-radius:3px;background:var(--surface);position:relative}
+.mark::before,.mark::after{content:"";position:absolute;border:0 dashed var(--guide-soft)}
+.mark::before{left:50%;top:3px;bottom:3px;border-left-width:1px}
+.mark::after{top:50%;left:3px;right:3px;border-top-width:1px}
+.mark span{position:relative;z-index:1}
+.top .ttl{flex:1;min-width:0}
+h1{margin:0;font-size:20px;font-weight:700;line-height:1.2}
+.sub{margin:2px 0 0;color:var(--muted);font-size:13px}
+.fontbtn{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px;display:flex;flex-direction:column;align-items:center;line-height:1.1;min-width:52px}
+.fontbtn .kg{font-size:20px}
+.fontbtn small{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.04em;margin-top:2px}
+
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:22px 0 8px}
+.eyebrow:first-child{margin-top:0}
+.muted{color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);line-height:1.5;margin:12px 0 0}
+
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.grid{display:grid;grid-template-columns:44px repeat(5,minmax(0,1fr));gap:6px;align-items:stretch}
+.colhead{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding-bottom:2px}
+.rowtog{border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;line-height:1.1;color:var(--muted)}
+.rowtog small{font-family:var(--ui);font-size:9px;font-weight:700;letter-spacing:.06em;margin-top:2px}
+.rowtog[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.cell{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;min-height:58px;transition:opacity .15s}
+.cell .k{font-size:26px;line-height:1.15}
+.cell .ro{font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.2}
+.cell.off{opacity:.42}
+.cell.empty{border:1px dashed var(--line);background:transparent}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;box-sizing:border-box;flex:none}
+.cell .dot{position:absolute;top:5px;right:5px}
+.lv-new{border:1px solid var(--line)}
+.lv-learn{border:1.5px solid var(--warn);background:linear-gradient(90deg,var(--warn) 50%,transparent 50%)}
+.lv-weak{background:var(--bad)}
+.lv-ok{background:var(--ok)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.danger{margin-top:22px;background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:4px 0}
+.danger.armed{color:var(--bad);font-weight:700}
+.unlockbar{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;font-size:13px}
+.unlockbar .meter{flex:1;height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.unlockbar .meter i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.unlockbar b{font-variant-numeric:tabular-nums}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.types{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 18px}
+.type{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.type b{font-size:14px}
+.type span{font-size:12px;color:var(--muted);line-height:1.35}
+.type[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.type[aria-pressed="true"] b{color:var(--accent)}
+.primary{width:100%;border:none;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;padding:14px}
+.primary:disabled{opacity:.45}
+.ghostbtn{border:1px solid var(--line);background:var(--surface);border-radius:12px;font-weight:500;padding:12px 14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.okbtn{border:1.5px solid var(--ok);background:var(--ok-soft);color:var(--ok);border-radius:12px;font-weight:700;padding:13px}
+.kobtn{border:1.5px solid var(--bad);background:var(--bad-soft);color:var(--bad);border-radius:12px;font-weight:700;padding:13px}
+
+.qtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.dots{display:flex;gap:5px;flex-wrap:wrap}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.dots i.cur{background:var(--accent)}
+.dots i.ok{background:var(--ok)}
+.dots i.ko{background:var(--bad)}
+.quit{background:none;border:none;color:var(--muted);font-size:13px;padding:4px}
+.qlabel{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:center;margin:0 0 6px}
+.qbig{font-size:96px;line-height:1.1;text-align:center;margin:0 0 14px}
+.qro{font-family:var(--mono);font-weight:600;font-size:44px;line-height:1.2;text-align:center;margin:4px 0 2px;letter-spacing:.02em}
+.qhint{text-align:center;color:var(--muted);font-size:13px;margin:0 0 14px;min-height:1em}
+.play{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px auto 18px;border:1.5px solid var(--accent);color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:12px 22px;font-weight:700}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px 8px;min-height:64px}
+.opt.r{font-family:var(--mono);font-weight:600;font-size:22px}
+.opt.k{font-family:var(--kana);font-weight:var(--kana-w);font-size:38px;line-height:1.1}
+.opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.opt:disabled{cursor:default}
+.typein{display:flex;gap:8px;max-width:340px;margin:0 auto}
+.typein input{flex:1;min-width:0;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;font-family:var(--mono);font-size:22px;font-weight:600;text-align:center}
+.typein input.right{border-color:var(--ok);color:var(--ok)}
+.typein input.wrong{border-color:var(--bad);color:var(--bad)}
+.typein .primary{width:auto;padding:12px 18px}
+.after{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.verdict{text-align:center;font-weight:700;margin:0}
+.verdict.ok{color:var(--ok)} .verdict.ko{color:var(--bad)} .verdict.mid{color:var(--warn)}
+.errline{color:var(--bad);font-size:13px;text-align:center;margin:8px 0 0}
+.stack{display:flex;flex-direction:column;gap:10px}
+.reveal{text-align:center;margin:0 0 12px}
+.reveal .ro{font-family:var(--mono);font-weight:600;font-size:34px}
+.playrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 14px}
+.pill{border:1.5px solid var(--accent);color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:9px 16px;font-weight:700;font-size:14px}
+.pill.recon{background:var(--bad);border-color:var(--bad);color:#fff}
+
+.pad{position:relative;width:100%;max-width:340px;aspect-ratio:1/1;margin:0 auto;background:var(--surface);border:1.5px solid var(--guide);border-radius:4px;overflow:hidden}
 .pad .gl{position:absolute;border:0 dashed var(--guide-soft);pointer-events:none}
 .pad .gv{left:50%;top:0;bottom:0;border-left-width:1.5px}
 .pad .gh{top:50%;left:0;right:0;border-top-width:1.5px}
-.pad .ghost{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--kana);font-weight:600;line-height:1;color:var(--ink);opacity:.12;pointer-events:none}
+.pad svg.ghost{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .pad canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
-.wbar{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:8px;max-width:320px;margin:12px auto 0}
-.wbar .primary{padding:11px}
-.results{display:flex;flex-direction:column;gap:10px;margin-top:18px}
-.res{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start}
-.res .badge{grid-row:span 3;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:20px}
-.res.ok .badge{background:var(--ok-soft);color:var(--ok)}
-.res.ko .badge{background:var(--bad-soft);color:var(--bad)}
-.res.mid .badge{background:var(--warn-soft);color:var(--warn)}
-.res h3{margin:0;font-size:15px}
-.res h3 small{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
-.res .why{margin:0;font-size:13px;color:var(--muted);line-height:1.4}
-.cands{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.cands b{font-family:var(--kana);font-weight:600;font-size:20px;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:0 7px;line-height:1.35}
+.wbar{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;max-width:340px;margin:12px auto 0}
+.wbar .primary{padding:12px;font-size:15px}
+.wres{max-width:340px;margin:14px auto 0;display:flex;flex-direction:column;gap:10px}
+.wline{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.advice{font-size:13.5px;background:var(--warn-soft);border-radius:10px;padding:9px 12px;line-height:1.4}
+.cands{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.cands b{font-family:var(--kana);font-weight:var(--kana-w);font-size:22px;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:0 8px;line-height:1.4;background:var(--surface)}
 .cands b.hit{border-color:var(--ok);color:var(--ok)}
-.note{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:16px}
-.bigk{font-family:var(--kana);font-weight:600;font-size:110px;line-height:1.1;text-align:center;margin:0}
-.rec{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px auto 0;border:none;background:var(--bad);color:#fff;border-radius:999px;padding:14px 26px;font-weight:700;font-size:16px}
-.rec.on{background:var(--ink);color:var(--paper)}
-.status{text-align:center;color:var(--muted);font-size:13px;min-height:20px;margin:10px 0 0}
-.heard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px}
-.heard .v{font-weight:700;margin:0 0 6px}
-.heard .v.ok{color:var(--ok)} .heard .v.ko{color:var(--bad)}
-.alts{display:flex;flex-wrap:wrap;gap:6px}
-.alts span{font-size:15px;border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--paper)}
-.alts span.hit{border-color:var(--ok);color:var(--ok)}
-.log{margin-top:18px;font-size:13px}
-.log table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.log td{padding:5px 4px;border-top:1px solid var(--line);vertical-align:top}
-.log td:first-child{font-family:var(--kana);font-weight:600;font-size:18px;width:34px}
-.log td:last-child{text-align:right;font-weight:700;width:24px}
-.warnbox{background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.45}
-.credit{font-size:11.5px;color:var(--muted);margin-top:24px}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.linkish{background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:2px}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+.toggle[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.wtop{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+
+.sv{display:flex;flex-direction:column;align-items:center;gap:8px}
+.sv .box{position:relative;width:100%;aspect-ratio:1/1;border:1.5px solid var(--guide);border-radius:4px;background:var(--surface)}
+.sv .box .gl{position:absolute;border:0 dashed var(--guide-soft)}
+.sv .box .gv{left:50%;top:0;bottom:0;border-left-width:1px}
+.sv .box .gh{top:50%;left:0;right:0;border-top-width:1px}
+.sv svg{position:absolute;inset:0;width:100%;height:100%}
+.sv .lbl{font-size:13px;color:var(--muted);text-align:center;min-height:1.5em;margin:0}
+.sv .ctl{display:flex;gap:8px}
+.sv .ctl button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 14px;font-weight:700;font-size:14px}
+.orderbox{max-width:260px;margin:14px auto 0}
+
+.score{font-family:var(--mono);font-weight:600;font-size:48px;text-align:center;margin:4px 0 0;font-variant-numeric:tabular-nums}
+.misses{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 18px}
+.miss{border:1px solid var(--bad);background:var(--bad-soft);border-radius:10px;padding:6px 12px;display:flex;flex-direction:column;align-items:center}
+.miss b{font-family:var(--kana);font-weight:var(--kana-w);font-size:28px;line-height:1.2;color:var(--ink)}
+.miss span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+.word{font-size:64px;line-height:1.15;text-align:center;margin:6px 0 4px;letter-spacing:.04em;word-break:keep-all}
+.heardbox{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
+.heardbox .alts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.heardbox .alts span{border:1px solid var(--line);border-radius:6px;padding:1px 8px;background:var(--surface)}
+.heardbox .alts span.hit{border-color:var(--ok);color:var(--ok)}
+.meaning{text-align:center;font-size:16px;margin:0}
+.lockgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.lockgrid span{font-family:var(--kana);font-weight:var(--kana-w);font-size:18px;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+.lockgrid span.done{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.bigmeter{height:10px;background:var(--sunk);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.bigmeter i{display:block;height:100%;background:var(--accent)}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding:6px 16px calc(6px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center}
+.tabs .in{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;max-width:560px}
+.tab{background:none;border:none;border-radius:10px;padding:6px 0;display:flex;flex-direction:column;align-items:center;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em;position:relative}
+.tab .ti{font-family:var(--kana-text);font-weight:600;font-size:22px;line-height:1.2}
+.tab[aria-selected="true"]{color:var(--accent);background:var(--accent-soft)}
+.tab .lock{position:absolute;top:3px;right:12%;font-size:10px}
+
+.backdrop{position:fixed;inset:0;background:rgba(10,14,20,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));box-sizing:border-box;max-height:92vh;overflow-y:auto}
+.sheet .row1{display:flex;gap:16px;align-items:flex-start}
+.sheet .row1 .sv{width:150px;flex:none}
+.facts{display:flex;flex-direction:column;gap:4px;font-size:14px;min-width:0}
+.facts .ro{font-family:var(--mono);font-weight:600;font-size:28px;line-height:1.1}
+.skills{display:flex;flex-direction:column;gap:3px;margin-top:6px;font-size:13px}
+.skills span{display:flex;align-items:center;gap:6px}
+.sheet .btns{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:18px}
+
+.onb{position:fixed;inset:0;z-index:30;background:var(--paper);overflow-y:auto;padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.onb .in{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.onb h2{margin:0;font-size:22px;line-height:1.25;text-wrap:balance}
+.onb p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.fchoice{border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 16px;text-align:left;display:flex;flex-direction:column;gap:6px}
+.fchoice[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.fchoice .sample{font-size:40px;line-height:1.2;letter-spacing:.06em}
+.fchoice .sample.std{font-family:var(--kana-std);font-weight:var(--kana-std-w)}
+.fchoice .sample.txt{font-family:var(--kana-text);font-weight:var(--kana-text-w)}
+.fchoice b{font-size:16px}
+.fchoice b small{font-family:var(--kana-std);font-weight:500;color:var(--muted);font-size:13px;margin-left:6px}
+.fchoice span{font-size:13.5px;color:var(--muted);line-height:1.45}
+.credit{font-size:11.5px;color:var(--muted);margin-top:28px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 
 
 <div class="app">
-  <h1>Laboratori de traç</h1>
-  <p class="sub">Prova de flexibilitat d'escriptura i de pronunciació per a Hiragana al dit</p>
+  <header class="top">
+    <div class="mark"><span>ひ</span></div>
+    <div class="ttl">
+      <h1>Hiragana al dit</h1>
+      <p class="sub" id="sub">&nbsp;</p>
+    </div>
+    <button class="fontbtn" id="fontBtn" aria-label="Canvia la lletra"><span class="kg">あ</span><small id="fontLbl">ESTÀNDARD</small></button>
+  </header>
 
-  <div class="seg" role="tablist">
-    <button role="tab" data-tab="w" aria-selected="true">Escriptura</button>
-    <button role="tab" data-tab="v" aria-selected="false">Pronunciació</button>
+  <section id="v-taula">
+    <div class="unlockbar" id="unlockBar"></div>
+    <p class="eyebrow">Què vols practicar</p>
+    <div class="quick" id="quick">
+      <button class="chip" data-q="base" aria-pressed="false">Bàsics · 46</button>
+      <button class="chip" data-q="all" aria-pressed="false">Tots · 71</button>
+      <button class="chip" data-q="none" aria-pressed="false">Cap</button>
+    </div>
+    <div id="chart"></div>
+    <div class="legend">
+      <span><i class="dot lv-new"></i>Sense practicar</span>
+      <span><i class="dot lv-learn"></i>Aprenent</span>
+      <span><i class="dot lv-weak"></i>Costa</span>
+      <span><i class="dot lv-ok"></i>Dominat</span>
+    </div>
+    <p class="note">Un kana queda dominat quan l'encertes 3 cops seguits a Reconèixer i 3 cops seguits a Escriure. Toca el nom d'una fila per incloure-la o treure-la. Toca un kana per veure'n l'ordre dels traços.</p>
+    <button class="danger" id="reset">Esborra el progrés</button>
+  </section>
+
+  <section id="v-ex" hidden>
+    <div id="setup" class="panel">
+      <p class="eyebrow">Ronda de 10 preguntes</p>
+      <p id="poolline" style="margin:0"></p>
+      <div class="types" id="types">
+        <button class="type" data-t="rec" aria-pressed="true"><b>Reconèixer</b><span>Kana ↔ romaji. Quan el domines, sense opcions</span></button>
+        <button class="type" data-t="read" aria-pressed="true"><b>Llegir</b><span>El dius en veu alta, et graves i t'avalues</span></button>
+        <button class="type" data-t="listen" aria-pressed="true"><b>Escoltar</b><span>Sents el so, tries el kana</span></button>
+        <button class="type" data-t="write" aria-pressed="true"><b>Escriure</b><span>El dibuixes amb el dit</span></button>
+      </div>
+      <button class="primary" id="start">Comença</button>
+    </div>
+    <div id="quiz" hidden></div>
+  </section>
+
+  <section id="v-escriu" hidden>
+    <div id="writeHost"></div>
+  </section>
+
+  <section id="v-paraules" hidden>
+    <div id="wordsHost"></div>
+  </section>
+
+  <p class="credit">Ordre i forma dels traços: KanjiVG, © Ulrich Apel, llicència CC BY-SA 3.0 (kanjivg.tagaini.net).</p>
+</div>
+
+<nav class="tabs" role="tablist">
+  <div class="in">
+    <button class="tab" role="tab" data-v="taula" aria-selected="true"><span class="ti">表</span>Taula</button>
+    <button class="tab" role="tab" data-v="ex" aria-selected="false"><span class="ti">問</span>Exercicis</button>
+    <button class="tab" role="tab" data-v="escriu" aria-selected="false"><span class="ti">書</span>Escriu</button>
+    <button class="tab" role="tab" data-v="paraules" aria-selected="false"><span class="ti">語</span>Paraules<span class="lock" id="tabLock">🔒</span></button>
   </div>
+</nav>
 
-  <section id="tw">
-    <div class="bar">
-      <select id="selW" aria-label="Kana a escriure"></select>
-      <button class="btn" id="rndW">Aleatori</button>
-      <button class="btn" id="mdl" aria-pressed="false">Model</button>
-    </div>
-    <div class="target"><span class="ro" id="roW"></span><span class="hint" id="hintW"></span></div>
-    <div class="pad" id="pad"><span class="gl gv"></span><span class="gl gh"></span><div class="ghost" id="ghost" hidden></div><canvas id="cv" aria-label="Zona per escriure amb el dit"></canvas></div>
-    <div class="wbar"><button class="btn" id="undo">Desfés</button><button class="btn" id="clr">Esborra</button><button class="primary" id="eval">Avalua</button></div>
-    <div class="results" id="results"></div>
-    <p class="note">Escriu el kana i compara com el jutgen tres mètodes. A: el de l'app actual. B: només mira la forma, però perdona inclinació, estirament i fa servir tres models de lletra. C: mira cada traç amb el seu ordre i direcció, però perdona la forma exacta. D: la proposta que combina els tres; és la que cal provar sobretot amb kana ben escrits.</p>
-  </section>
+<div class="backdrop" id="backdrop" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+</div>
 
-  <section id="tv" hidden>
-    <div id="noSR" class="warnbox" hidden>Aquest navegador no deixa fer servir el micròfon aquí. Obre aquesta pàgina des de GitHub Pages amb Safari i comprova que el Dictat de l'iPhone estigui activat (Configuració → General → Teclat).</div>
-    <div class="bar">
-      <select id="selV" aria-label="Kana a pronunciar"></select>
-      <button class="btn" id="rndV">Aleatori</button>
-    </div>
-    <p class="bigk" id="kV"></p>
-    <div class="bar" style="justify-content:center"><span class="muted" style="font-size:13px">Mode de prova:</span><button class="btn" data-mode="A">A</button><button class="btn" data-mode="B">B</button><button class="btn" data-mode="C">C</button></div>
-    <button class="rec" id="rec">● Grava</button>
-    <p class="status" id="st">Toca Grava i digues el kana en veu alta. Es para sol quan deixes de parlar.</p>
-    <div class="heard" id="heard" hidden></div>
-    <div class="log" id="log" hidden>
-      <div class="bar" style="justify-content:space-between"><b>Registre de proves</b><button class="btn" id="copy">Copia el registre</button></div>
-      <table><tbody id="logb"></tbody></table>
-    </div>
-  </section>
-
-  <p class="credit">Dades de traços: KanjiVG, © Ulrich Apel, llicència CC BY-SA 3.0 (kanjivg.tagaini.net).</p>
+<div class="onb" id="onb" hidden>
+  <div class="in">
+    <div class="mark" style="align-self:flex-start"><span>ひ</span></div>
+    <h2>Amb quina lletra vols aprendre a llegir?</h2>
+    <p>El hiragana es veu diferent segons la font. Tria la que vulguis veure a la taula i als exercicis. La pots canviar quan vulguis amb el botó de dalt a la dreta.</p>
+    <button class="fchoice" data-font="std" aria-pressed="false">
+      <span class="sample std">あいう さきそ</span>
+      <b>Estàndard<small>ゴシック体</small></b>
+      <span>La que veuràs als rètols, estacions, menús i pantalles. Recomanada per al viatge.</span>
+    </button>
+    <button class="fchoice" data-font="text" aria-pressed="false">
+      <span class="sample txt">あいう さきそ</span>
+      <b>Llibre de text<small>教科書体</small></b>
+      <span>Imita l'escriptura a mà, com als llibres de l'escola. Útil si vols aprendre japonès més a fons.</span>
+    </button>
+    <p>Fixa't en き, さ i そ: a la lletra estàndard alguns traços s'uneixen. Per escriure, l'app sempre et mostra els traços reals, triïs la lletra que triïs.</p>
+    <button class="primary" id="onbGo" disabled>Continua</button>
+  </div>
 </div>
 
 <script>
 (function(){
 'use strict';
-var KVG = {"あ":["M31.01,33c0.88,0.88,2.75,1.82,5.25,1.75c8.62-0.25,20-2.12,29.5-4.25c1.51-0.34,4.62-0.88,6.62-0.5","M49.76,17.62c0.88,1,1.82,3.26,1.38,5.25c-3.75,16.75-6.25,38.13-5.13,53.63c0.41,5.7,1.88,10.88,3.38,13.62","M65.63,44.12c0.75,1.12,1.16,4.39,0.5,6.12c-4.62,12.26-11.24,23.76-25.37,35.76c-6.86,5.83-15.88,3.75-16.25-8.38c-0.34-10.87,13.38-23.12,32.38-26.74c12.42-2.37,27,1.38,30.5,12.75c4.05,13.18-3.76,26.37-20.88,30.49"],"い":["M21.5,29.66c2.01,2.17,2.61,4.68,2.17,7.43c-3.09,19.16-1.03,32.01,7.93,41.45c6.12,6.45,6.26,3.14,7.04-5.21","M72.96,36.51c9.44,8.05,17.79,18.82,18.41,33.83"],"う":["M42,15.5c5.62,2.12,9.62,3,12.88,3c8.27,0,8,1.12-0.38,5.5","M33,42.38c2.12,1.12,4.12,2.88,8.5,1.38c4.38-1.5,12.75-7.12,18.5-7c5.75,0.12,10.25,5,10.25,18c0,15.49-8.25,30.24-24.37,41.24"],"え":["M40.52,13.25c5.62,2.12,10,3,14.12,3c8.27,0,8,1.12-0.38,5.5","M32.52,45.12c1.88,1.25,4.5,1.75,7.38,0.62c3.29-1.29,17-7.88,21.25-9.88c4.25-2,8.32,0.04,4.38,4.62c-12.26,14.27-27.26,31.52-39.51,44.4c-3.26,3.42-0.58,3.54,1.5,1.37c13.5-14.12,18.12-20.12,23.62-20.12c7.13,0,3.5,16.75,6.75,22.38c3.25,5.63,19.12,3.75,26.12,2.12"],"お":["M22.88,35.12c1.38,1,3.62,2.38,6,2.12c2.38-0.26,19.62-5.12,21.12-5.74c1.5-0.62,4-1.25,5.88-2","M41.5,16.12c2.25,1,3.59,4.39,3.12,7.38c-2.5,16.12-3.37,45.53-2.25,58.38c0.75,8.62-0.64,10.45-7.12,7.12c-5.13-2.62-13.75-8-13.75-12.38c0-7.5,24.38-23.62,44.75-23.62c17.25,0,25,8.25,25,17.25c0,8.25-9.38,18.88-26.75,21","M73,22.12c5.38,2.62,8.88,5.88,10.62,8.25c2.27,3.08,0.38,4.5-1.12,5"],"か":["M24.62,38.62c1.88,1.62,4.65,2.33,8.62,1c25.5-8.5,29.5-4.13,29.5,7.62c0,9.38-1.24,17.46-4.25,25.25c-7.62,19.76-10.87,17.39-16.12,10.89","M48.5,17.5c1,1.38,1.29,4.7,0.5,7.12c-5,15.25-18.02,40.93-19.62,43.88c-3.12,5.75-6.38,11.88-9.38,16.25","M77.37,31.62c7.5,6.88,13.25,15.75,15,24.88"],"き":["M30.5,30.25c1.88,0.75,4.64,1.06,5.88,0.88c6.75-1,22.25-4.5,26.5-6c2.17-0.76,3.5-1.25,4.88-2.12","M36.25,48.7c2.01,0.85,4.97,1.2,6.29,0.99c7.23-1.13,23.82-5.09,28.37-6.79c2.32-0.86,3.75-1.41,5.22-2.4","M42,14.12c1.5,0.88,3.13,2.94,4,5.12c5.5,13.76,16,29.26,26.37,40.76c7.64,8.47,9.12,9.38-6,3.88","M33.75,83.25c10.62,9.75,27.25,8.62,38.12,5"],"く":["M60.66,15c0.5,1.62,0.35,5.44-1,7.38c-6.75,9.62-14.3,19.08-18.62,24.5c-4,5-3.79,7.03-0.88,11c5.5,7.5,12.75,18.75,17.62,27.25c1.48,2.59,2.75,4.75,4.5,8.62"],"け":["M24.67,19.75c1.25,1.5,2.62,3.75,2.12,6.38c-3,15.88-6.5,29.5-4.88,44.62c2.02,18.84,2.25,4.75,6.75-3.5","M53.67,38.62c2.12,1.38,4.28,1.89,6.88,1.5c8.25-1.25,15.39-2.57,20.62-4c2.76-0.74,5.26-1.12,6.88-1.12","M71.67,14.38c2.13,1.37,2.88,3.35,2.88,5.12c0,11.62,0.12,20.38,0.12,30.12c0,20.75-0.62,30.88-12.5,42.25"],"こ":["M34.75,26.75c1.12,0.88,2.91,2.01,6,1.5c7.62-1.25,14.11-2.56,22.38-2.62c15.5-0.12,5.88,5-5.75,9","M30,68.12c2.25,14.5,15.26,17.96,31,16.75c6.5-0.5,11.88-1.25,17.62-2.88"],"さ":["M27,38.9c2.42,1.33,5.38,1.47,8.32,1.06c8.79-1.24,28.67-7.76,34.15-10.43c2.79-1.36,3.78-1.91,6.28-3.53","M41.5,13.88c1.5,0.88,3.63,2.94,4.5,5.12c5.5,13.75,15.25,27.62,26.87,39.5c7.98,8.15,6.38,10-6,3.12","M35.25,80.5c4.5,11.75,20.88,12.5,38.38,7.5"],"し":["M39.12,17.5c1.25,3.12,0.93,6.74,0.38,10.25c-2.12,13.5-3,26.5-3,39.12c0,27.38,19.88,30.12,45.5,17.25"],"す":["M15.5,37.12c2.88,2.12,6.94,1.51,12.75,0.25c16.12-3.5,36.14-5.38,46.62-6.5c7-0.75,11.88-0.62,17.75,0.12","M57.62,13.38c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,35.12,0,40.75c0,14.62-15.62,16.38-15.62,1.75c0-14.25,18-14.12,18,6.38c0,13.25-7.75,21.5-16,28.38"],"せ":["M16.5,49.93c2.88,2.42,6.86,1.57,12.75,0.53c19-3.34,33-5.72,47.12-7.64c6.99-0.95,11.88-1.21,17.75-0.36","M69.74,17.75c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,17.88,0,23.5c0,25.62-5.75,23.25-11.88,19","M35.62,26.25c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,28.38,0,34c0,14.5,6.38,19.55,20.14,19.55c10.24,0,13.74,0.07,22.61-1.68"],"そ":["M38.4,22c1.88,1.25,4.98,1.05,7.5,0.38c6.5-1.75,13.25-3.75,19.38-5.38c4.63-1.23,7.18,2.06,3.62,5.25c-12.12,10.87-31.14,24.4-40,30.25c-6.25,4.12-5.88,5.75,1.38,3.88c17.08-4.42,35.96-8.68,50.12-10.38c9.38-1.12,9.62,0.12,0.5,1.38c-15.82,2.17-34.38,14.25-34.38,26.5c0,12.88,11.62,20.38,31.5,16.62"],"た":["M24.38,35.38c1.38,0.62,3.88,1.51,6.38,1.12c6.5-1,16.25-2.88,24.88-4.75c2.64-0.57,5.38-1.5,7.62-2.38","M45,16.88c0.75,1.25,0.87,3.62,0.38,5.25c-6.35,20.94-12.75,36.37-18.88,52.37c-1.36,3.56-4.75,11.75-6,14.62","M56.38,53.25c12.38-2.75,18.25-3.7,23.62-3.12c15.12,1.62-1.12,2.25-4.25,4.88","M54.13,82.25c4.38,7,14.25,8.12,34.5,5.62"],"ち":["M24.5,32.62c1.38,0.62,3.88,1.51,6.38,1.12c6.5-1,18.25-4.12,26.88-6c2.64-0.57,5.38-1.5,7.62-2.38","M45.62,15.62c0.75,1.25,0.71,3.58,0.38,5.25c-3,15-4.25,22.59-8.38,38.62c-3.25,12.62-5.38,11.12,3.62,4.38c8.29-6.21,19.75-9.5,28.5-9.5c8.62,0,14.58,5.88,14.5,14.5c-0.12,13.5-16.5,20.62-29.88,23.25"],"つ":["M14,44.75c1.88,1.62,4.68,2.09,8.12,0.62c17.88-7.62,30-11.12,44.88-10.88c12.56,0.21,22.98,7.17,22.87,19.17c-0.18,18.77-24.75,28.71-45.01,32.08"],"て":["M20.5,26.38c1.87,1.62,4.42,1.97,8.12,1.37c21.75-3.5,33-5.12,50.12-8.38c12.34-2.34,13-0.88,0.38,1.38c-17.89,3.19-33.78,19.12-33.78,37.62c0,20.5,17.91,30.25,35.16,30.25"],"と":["M35.5,18.38c1.74,0.74,3.62,2.62,4.12,5.37c0.5,2.75,4.75,25,5.38,28.12","M78.12,25.5c0.25,1.88,0.04,4.09-2.25,5.75c-6.37,4.63-13.22,8.49-22.75,15.25c-12.88,9.12-21.62,18.38-21.62,27.5c0,10.12,8.5,13.88,26.88,13.88c6.25,0,14.75-0.12,21.62-1.25"],"な":["M22.88,28.96c1.18,0.58,3.3,1.1,5.47,1.05c5.53-0.13,10.9-0.98,16.52-2.42c4.82-1.23,9.13-3.12,11.38-4.22","M42.99,14c0.63,0.89,0.56,2.52,0.31,3.72c-2.96,14.16-7.95,26.56-14.25,37.87c-2.05,3.69-4.25,7.24-6.55,10.65","M72.26,23.25c6.88,2.5,12.62,5.62,14.75,9.5c4.06,7.41-0.25,3.38-3.5,3.88","M68.88,44.62c-1,1.88-2.14,5.24-1.88,8.25c0.62,7,1.5,13.12,1.5,20.62c0,20-27.88,19.75-27.88,9.38c0-5.62,8.25-8.25,13.88-8.25c8.75,0,21.5,3.25,29.75,11.5"],"に":["M24.53,22.75c1.25,1.5,1.62,3.75,1.12,6.38c-3,15.88-9,32.5-7.38,47.62c2.02,18.84,4.5,5.75,8.5-3.5","M53.2,30.64c0.96,0.79,2.44,1.58,5.1,1.35c6.98-0.61,15.01-3.3,22.04-3.36c13.19-0.11,1.5,3.75-8.39,7.35","M52.53,68c1.76,12.92,11.92,16.01,24.23,14.93c5.08-0.45,8.9-0.8,14.27-2.06"],"ぬ":["M25.38,28.5c2,1.38,2.97,3.23,3.38,5.88c1.87,12.18,4.12,23.92,8.54,34.67c1.79,4.36,3.96,8.33,6.84,12.46","M57.12,19.25c0.88,2.12,1.06,3.79,0.62,5.88c-3.12,15-13.14,39.81-18.12,48.62c-11.87,21-20.62,1.25-20.62-4.5c0-22.63,43.75-44.25,62.36-29.59c7.66,6.03,9.8,14.58,9.14,23.34c-2,26.75-32.88,28.38-32.88,16.88c0-9.38,17.38-7.12,27.12-1.12c3.1,1.91,7.25,5.25,9.5,7.5"],"ね":["M33.29,14.5c1.62,1.62,2.1,3.21,1.88,5.88c-1.03,11.93-2.06,31.66-2.53,53.12c-0.1,4.62-0.18,9.31-0.22,14","M17.16,37.88c1.62,0.88,3.25,1.38,5.62,0.75c2.14-0.56,7.8-2.31,12.37-4.03c6.26-2.35,6.88-1.47,3.12,3.63c-5.56,7.53-13.02,17.38-18.48,26.77c-5.6,9.62-3.45,8.3,2,3c19.12-18.62,38.5-39.12,54.12-39.12c11.38,0,12.88,11.25,12.88,32.5c0,28.62-30.18,24.88-30.18,16.26c0-9.63,18.73-7.82,28.06-1.88c2.75,1.75,5.88,4.88,7.5,6.75"],"の":["M53.82,28.62c1,1.5,1.34,4.12,0.88,6.62c-1.75,9.5-6.89,25-10.75,33.12c-9.63,20.26-16.55,14.74-24.38-1.98c-9.13-19.5,23.5-48.88,50.63-40.38c32.38,10.15,28,54.62-4.75,60.88"],"は":["M24.51,18c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.62-6.98,36.4-4,54.88c2.5,15.5,1.12,2,5.62-6.25","M49.64,37.89c2.41,1.57,4.85,2.16,7.8,1.71c9.36-1.43,17.46-2.94,23.4-4.57c3.12-0.86,5.96-1.29,7.8-1.29","M69.77,16.5c2.25,2.12,2.88,4.12,2.88,6.5c0,2.38,1.5,38.62,1.5,48c0,22.5-30.62,19.62-30.62,10.5c0-9.75,23.88-5.62,29.5-2.88c5.62,2.74,11.98,8.26,13.36,9.38"],"ひ":["M20,25.12c1.25,0.88,3.75,2.25,6.5,1.38c2.75-0.87,7.31-2.38,11.38-4.5c6-3.12,8.42-1.01,4.25,4c-27.13,32.62-23.76,58.5-1.52,62.88c18.07,3.56,37.63-16.38,35.63-56.51c-0.72-14.5-0.17-14.78,4.12-1.75c3.76,11.38,10.26,20.76,16.14,26.5"],"ふ":["M42.63,15.62c3.62,3.38,7.5,5.38,12.74,6.13c9.59,1.37,3.5,3.38-1.88,6.12","M43.63,46.88c1.88,4.62,7.5,9.41,14.25,17.5c10.62,12.74,0.49,30-19.13,21.62","M16.5,73.38c0.75,4,1.88,8.12,5,10.12c1.16,0.74,0.12-3.38,13.25-9.12","M80.13,61.88c5.12,3.38,10.28,7.49,11.38,8.88c6.75,8.5-0.25,4.62-4.62,7.12"],"へ":["M15,48.75c2.25,1.62,4.67,1.96,7-0.38c3.62-3.62,7.46-6.54,11.25-10.5c5.5-5.75,8.48-4.75,13.12-0.88c12.12,10.12,30.38,25.12,33.38,27.38c3,2.26,12.37,10.38,13.87,11.63"],"ほ":["M24.51,18.75c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.63-6.98,37.4-4,55.88c2.5,15.5,1.12,2,5.62-6.25","M53.08,21.13c1.9,1.28,3.82,1.76,6.14,1.4c7.36-1.17,13.73-2.4,18.41-3.73c2.46-0.7,4.69-1.05,6.13-1.05","M53.83,44.3c2.21,1.44,4.46,1.98,7.16,1.57c8.59-1.31,15.78-2.44,21.23-3.94c2.87-0.79,5.72-1.18,7.41-1.18","M72.51,23c1.38,1.62,1.62,4.12,1.62,6.5c0,2.38,2,35.12,2,44.5c0,17.5-29.88,17.12-29.88,8c0-9.75,21.38-7.88,29.5-2.88c5.33,3.28,12,8.25,13.38,9.38"],"ま":["M29.83,32.28c2.2,1.15,4.43,1.5,7.14,1.26c11.54-1.04,25.94-3.12,34.66-4.85c2.87-0.57,5.45-0.44,7.13-0.44","M33.83,51.84c2.45,1.61,4.94,1.72,7.94,1.26c9.52-1.46,17.87-3.1,27.03-5.16c3.22-0.72,6.34-1.32,8.21-1.32","M55.81,14c1.52,1.8,1.8,4.57,1.8,7.19c0,2.63,0.46,43.88,0.46,54.25c0,21.3-30.07,19.96-30.07,9.86c0-10.79,25.88-9.93,38.57-3.18c6.12,3.25,11.55,6.38,14.8,9.13"],"み":["M32.5,26c1.88,1.75,4.06,1.7,6.88,1.25c3.88-0.62,7.62-1.75,11.88-3.12c4.26-1.37,6.25-0.12,4.5,5.12c-1.75,5.24-6.66,17.39-12,30.12c-13.63,32.51-29.26,29.26-29.26,18.63c0-14.25,20.48-15.36,33-13.5c18.5,2.75,30,6.62,44.38,14.25","M79.38,54.75c0.75,2.38,0.49,4.37,0,6.25c-2.12,8.12-7.5,25-22.12,33.75"],"む":["M19.59,31.65c2.1,1.55,4.24,1.66,6.81,1.21c8.17-1.41,15.33-2.98,23.19-4.96c2.76-0.69,5.44-1.27,7.05-1.27","M37.02,15.5c1.62,1.25,2.31,2.88,2.12,5.25c-0.88,11.12-1.5,20.75-4,34.88c-3.61,20.44-19.25,16.99-18.62,7.37c0.5-7.74,6.25-12.86,12.62-13.5c5-0.5,14.28,1.93,5.88,15c-12.62,19.62-11.42,24.51,5.11,25.54c10.98,0.68,19.26,0.72,28.49-0.92c14.15-2.5,7.4-2.63,7.4-11.13","M78.52,36.25c6.88,3.12,11.71,5.95,14.88,10.12c6.25,8.25-1.38,3.62-4.5,4.5"],"め":["M27.48,31.75c1.75,1,2.41,3.09,2.5,5.25c0.5,11.62,2.75,23.5,7.25,31.38c1.39,2.44,5.38,8.5,7.25,10.38","M59.6,19.38c1,1.5,1.35,4.12,0.88,6.62c-2.75,14.62-13.62,37.75-20.1,47.24c-12.28,17.14-16.78,13.14-22.28,0.64c-5.38-15.38,26.4-42.18,53.42-35.28c29.08,8.27,23.96,46.02-7.98,50.15"],"も":["M49.17,14.75c1.88,1.88,1.86,4.52,1.12,8c-3,14.25-5,26.62-7,42.12c-2.55,19.73-0.75,29.88,17,29.86c20.25-0.02,28.63-13.11,20.01-35.73","M26.54,34.62c1.12,0.88,2.87,2.21,6,2c11.12-0.75,20-2.12,27.74-3.46c3.88-0.67,5.88-1.17,8.88-1.04","M26.42,53.38c-1.5,4,1,6.75,7.75,6.75c8.75,0,17.62-1,22.88-1.88c2.01-0.33,5.38-1,7.5-1.75"],"や":["M18,49.38c1.88,1.62,5.25,2.5,8.62,0.88c18.51-8.88,35.76-19.38,50.83-19.26c9.02,0.14,16.01,4.13,15.93,12.29c0,8.33-10.88,16.58-24.5,17.83","M47.13,15.88c5.12,0.88,10.41,4.05,11.5,6.62c2.12,5-1,2.38-2.88,2.62","M30,24.38c2.38,1.88,3.28,2.87,3.88,5.25c2.62,10.5,11.12,41.12,14.75,52.5c0.65,2.04,1.88,6.25,2.88,9.38"],"ゆ":["M21.05,25.38c1.38,1.5,2.02,4.13,1.5,6.25c-2.88,11.75-4,22.25-2.12,35c2.77,18.85,1.12,3.88,3.25-1.5c9-22.75,27.24-34.5,44.38-34.5c16.88,0,21.88,11.38,21.88,20.25c0,27.38-30.88,29.62-43,16.75","M58.42,16.75c2.62,1.75,3.17,3.13,3.5,7.12c0.88,10.5,1.4,18.72,1.62,29.38c0.5,24-6.25,32-12.38,39.25"],"よ":["M58.24,35.38c7.5-1.28,13.74-2.63,18.5-4.1c2.5-0.77,4.77-1.15,6.25-1.15","M54.62,13.88c2.25,2.12,2.98,4.13,2.88,6.5c-0.75,17-0.12,34.88,1.39,53.5c1.88,23.07-34.89,20.88-34.89,11.5c0-12,26.25-8,35.98-4.12c8.1,3.23,11.52,4.88,18.52,10.38"],"ら":["M35.33,15c3.75,3,9.22,4.41,16.5,4.25c11.12-0.25-0.25,2.38-1.25,3.5","M35.83,35.75c-2.14,4.34-2.79,8.67-3.11,13.24c-0.42,5.84-0.31,12.05-2.14,19.13c-3.16,12.27,1.49,4.77,3,3.5c11.88-10,21.7-12.67,32.61-12.49c9.21,0.15,16.85,5.19,16.76,13.88c-0.12,13.6-14.24,21.49-32.49,22.49"],"り":["M38.75,25.25c1.25,1.5,2.24,4.03,1.62,6.62c-2.88,12.13-6.29,29.65-4.25,42.38c2,12.5,1.75-0.75,5.62-6.25","M69.37,18.75c2.25,2.12,2.88,4.12,2.88,6.5c0,2.38,0,26.38,0,35.75c0,16.5-5,25.75-12.62,33.12"],"る":["M34.31,20.38c1.75,1.25,4.62,2.62,8.5,1.5c3.88-1.12,9.62-2.5,15.62-4.62c6-2.12,7.5-0.12,4.38,4.25c-3.12,4.37-18.89,24.62-27.75,34c-8.5,9-13.09,11.89,0.75,3.25c15.62-9.75,43-10.88,43,13.38c0,22.5-40.88,24.5-40.88,12.62c0-11.25,18.12-8.75,24.38-0.38"],"れ":["M34.48,13c1.5,1.38,2.83,3.74,2.5,6.38c-0.5,4-2.75,44.5-2.75,52.88c0,8.38,0.12,16.62,0.12,19.5","M16.98,40.75c2.12,1.38,3.74,1.46,7.5,0c4.5-1.75,6.55-2.66,13-5.5c4.25-1.88,4.4,0.24,2.5,3.5c-5.25,9-10.5,16.75-18.88,27.62c-7.55,9.81-6.93,12.85,3.25,3.12c14-13.38,20.34-19.76,33.88-32.5c6.38-6,19.39-12.09,18.14,0.88c-1.02,10.63-1.89,22.13-2.29,30.75c-1.02,21.71,11.53,18,20.15,8.63"],"ろ":["M36.95,21.88c1.5,2,4.62,3.62,8.5,2.5c3.88-1.12,8.12-2.25,14.12-4.38c6-2.13,6.53-0.1,3.38,4.25c-7.88,10.88-18,22.75-27.5,35.25c-7.49,9.86-10.68,11.32,2.88,2.25c17.38-11.62,46.62-14,46.62,8.12c0,15.62-16,22.5-32.12,25.12"],"わ":["M38.53,14.75c1.5,1.38,2.22,3.73,2,6.38c-1,11.87-2.75,44.49-2.75,52.87c0,8.38-0.62,16.62-0.62,19.5","M17.53,40.75c2.12,1.38,3.68,1.3,7.5,0c5.88-2,9.8-3.16,16.25-6c4.25-1.88,6.12,0,2.75,4c-6.72,7.96-13,16.5-22.12,27.88c-7.75,9.66-7.54,12.21,3,2.88c21.88-19.38,49.75-35.62,63.5-21c14.36,15.27,1.62,36.62-23.38,42.62"],"を":["M28.56,27.87c1.62,1.13,3.17,1.64,6.01,1.12c10.86-1.99,16.74-3.37,24.71-4.72c3.64-0.62,5.65-0.93,8.4-0.75","M49.93,14.38c0.75,1,1.48,3.22,0.38,5.62c-4.62,10.12-10,20.75-17.12,30.25c-9.25,12.33-9.25,11.19,2.12,2.5c9-6.88,23.75-12.12,22.88,19.88","M83.06,39.88c0.62,1.75,0,4-3,5.75c-3,1.75-49.62,24.16-44.75,38.25c3.28,9.48,17.93,9.12,29.98,7.75c4.48-0.51,9.15-1.12,12.4-1.75"],"ん":["M56.35,16.5c0.75,1.75,1.13,5.83-0.38,8.25c-7,11.25-27.22,43.47-33.88,54.37c-9,14.75-7.62,16.25,1.5,1.25c17.86-29.36,32-23.76,32-6.75c0,25,19,26.5,34.25-5"],"が":["M24.62,38.62c1.88,1.62,4.65,2.33,8.62,1c25.5-8.5,29.5-4.13,29.5,7.62c0,9.38-1.24,17.46-4.25,25.25c-7.62,19.76-10.87,17.39-16.12,10.89","M48.5,17.5c1,1.38,1.29,4.7,0.5,7.12c-5,15.25-18.02,40.93-19.62,43.88c-3.12,5.75-6.38,11.88-9.38,16.25","M77.37,31.62c7.5,6.88,13.25,15.75,15,24.88","M80.5,18.25c2.75,1.75,6,5.38,7.75,8.5","M86.87,13.38c3.06,1.57,6.68,4.82,8.62,7.62"],"ぎ":["M30.5,30.5c1.88,0.75,4.64,1.06,5.88,0.88c6.75-1,22.25-4.5,26.5-6c2.17-0.76,3.5-1.25,4.88-2.12","M36.25,48.95c2.01,0.85,4.97,1.2,6.29,0.99c7.23-1.13,23.82-5.09,28.37-6.79c2.32-0.86,3.75-1.41,5.22-2.4","M42,14.38c1.5,0.88,3.13,2.94,4,5.12c5.5,13.75,16,29.25,26.38,40.75c7.64,8.47,9.12,9.38-6,3.88","M33.75,83.5c10.62,9.75,27.25,8.62,38.12,5","M77.37,19c2.75,1.75,6,5.38,7.75,8.5","M83.75,14.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ぐ":["M60.66,15c0.5,2.12,0.75,5-1,7.38c-6.97,9.46-14.29,19.09-18.62,24.5c-4,5-3.79,7.03-0.88,11c5.5,7.5,12.75,18.75,17.62,27.25c1.48,2.59,2.75,4.75,4.5,8.62","M73.54,30c2.75,1.75,6,5.38,7.75,8.5","M79.91,25.12c3.06,1.57,6.68,4.82,8.62,7.62"],"げ":["M24.91,20.25c1.25,1.5,2.37,3.75,1.88,6.38c-3,15.88-6.5,29.5-4.88,44.62c2.02,18.84,2.25,4.75,6.75-3.5","M53.67,39.12c2.12,1.38,4.28,1.89,6.88,1.5c8.25-1.25,15.39-2.57,20.62-4c2.75-0.75,5.25-1.12,6.88-1.12","M71.67,14.62c2.12,1.38,2.87,3.61,2.87,5.38c0,11.62,0.12,20.38,0.12,30.12c0,20.75-0.62,30.88-12.5,42.25","M86.17,13c2.75,1.75,6,5.38,7.75,8.5","M92.54,8.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ご":["M34.75,27c1.12,0.88,2.91,2.01,6,1.5c7.62-1.25,14.11-2.56,22.38-2.62c15.5-0.12,5.88,5-5.75,9","M30,68.38c2.25,14.5,15.26,17.96,31,16.75c6.5-0.5,11.88-1.25,17.62-2.88","M80.37,16.25c2.75,1.75,6,5.38,7.75,8.5","M86.75,11.38c3.06,1.57,6.68,4.82,8.62,7.62"],"ざ":["M27,39.15c2.42,1.33,5.38,1.47,8.32,1.06c8.79-1.24,28.67-8.01,34.15-10.68c2.79-1.36,3.78-1.91,6.28-3.53","M41.5,14.12c1.5,0.88,3.63,2.95,4.5,5.13c5.5,13.75,15.25,27.63,26.88,39.5c7.98,8.15,6.38,10-6,3.12","M35.25,80.75c4.5,11.75,20.88,12.5,38.38,7.5","M79.88,14.25c2.75,1.75,6,5.38,7.75,8.5","M86.25,9.38c3.06,1.57,6.68,4.82,8.62,7.62"],"じ":["M39.12,17.25c1.25,3.12,0.93,6.74,0.38,10.25c-2.12,13.5-3,26.5-3,39.12c0,27.38,19.88,30.12,45.5,17.25","M64.24,27c2.75,1.75,6,5.38,7.75,8.5","M70.62,22.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ず":["M15.5,37.12c2.88,2.12,6.94,1.51,12.75,0.25c16.12-3.5,36.14-5.38,46.62-6.5c7-0.75,11.88-0.62,17.75,0.12","M57.62,13.38c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,35.12,0,40.75c0,14.62-15.62,16.38-15.62,1.75c0-14.25,18-14.12,18,6.38c0,13.25-7.75,21.5-16,28.38","M77,13c2.75,1.75,6,5.38,7.75,8.5","M83.37,8.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ぜ":["M16.5,49.93c2.88,2.42,6.86,1.57,12.75,0.53c19-3.34,32.5-5.34,47.12-7.64c6.97-1.1,11.88-1.21,17.75-0.36","M69.74,17.75c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,17.88,0,23.5c0,25.62-5.75,23.25-11.88,19","M35.62,26.25c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,28.38,0,34c0,14.5,6.38,19.55,20.14,19.55c10.24,0,13.74,0.07,22.61-1.68","M84.5,17.25c2.75,1.75,6,5.38,7.75,8.5","M90.87,12.38c3.06,1.57,6.68,4.82,8.62,7.62"],"ぞ":["M38.4,22c1.88,1.25,4.98,1.05,7.5,0.38c6.5-1.75,13.25-3.75,19.38-5.38c4.63-1.23,7.18,2.06,3.62,5.25c-12.12,10.87-31.14,24.4-40,30.25c-6.25,4.12-5.88,5.75,1.38,3.88c17.08-4.42,35.96-8.68,50.12-10.38c9.38-1.12,9.62,0.12,0.5,1.38c-15.82,2.17-34.38,14.25-34.38,26.5c0,12.88,11.62,20.38,31.5,16.62","M81.78,26.75c2.75,1.75,6,5.38,7.75,8.5","M88.15,21.88c3.06,1.57,6.68,4.82,8.62,7.62"],"だ":["M24.38,35.38c1.38,0.62,3.88,1.51,6.38,1.12c6.5-1,16.25-2.88,24.88-4.75c2.64-0.57,5.38-1.5,7.62-2.38","M45,16.88c0.75,1.25,0.87,3.62,0.38,5.25c-6.35,20.94-12.75,36.37-18.88,52.37c-1.36,3.56-4.75,11.75-6,14.62","M56.38,53.25c12.38-2.75,18.25-3.7,23.62-3.12c15.12,1.62-1.12,2.25-4.25,4.88","M54.13,82.25c4.38,7,14.25,8.12,34.5,5.62","M76,22.5c2.75,1.75,6,5.38,7.75,8.5","M82.38,17.62c3.06,1.57,6.68,4.82,8.62,7.62"],"ぢ":["M24.5,32.88c1.38,0.62,3.88,1.51,6.38,1.12c6.5-1,18.25-4.12,26.88-6c2.64-0.57,5.38-1.5,7.62-2.38","M45.63,15.88c0.75,1.25,0.71,3.58,0.38,5.25c-3,15-4.25,22.59-8.38,38.62c-3.26,12.63-5.38,11.13,3.62,4.37c8.29-6.21,19.75-9.5,28.5-9.5c8.62,0,14.58,5.88,14.5,14.5c-0.12,13.5-16.5,20.62-29.88,23.25","M74.63,21.75c2.75,1.75,6,5.38,7.75,8.5","M81,16.88c3.06,1.57,6.68,4.82,8.62,7.62"],"づ":["M14,44.75c1.88,1.62,4.68,2.09,8.12,0.62c17.88-7.62,30-11.12,44.88-10.88c12.56,0.21,22.98,7.17,22.87,19.17c-0.18,18.77-24.75,28.71-45.01,32.08","M81,18c2.75,1.75,6,5.38,7.75,8.5","M87.38,13.12c3.06,1.57,6.68,4.82,8.62,7.62"],"で":["M20.5,26.38c1.87,1.62,4.42,1.97,8.12,1.37c21.75-3.5,33-5.12,50.12-8.38c12.34-2.34,13-0.88,0.38,1.38c-17.89,3.19-33.78,19.12-33.78,37.62c0,20.5,17.91,30.25,35.16,30.25","M75,41.75c2.75,1.75,6,5.38,7.75,8.5","M81.37,36.88c3.06,1.57,6.68,4.82,8.62,7.62"],"ど":["M35.5,18.38c1.74,0.74,3.62,2.62,4.12,5.37c0.5,2.75,4.75,25,5.38,28.12","M78.12,25.5c0.25,1.88,0.04,4.09-2.25,5.75c-6.37,4.63-13.21,8.49-22.75,15.25c-12.88,9.12-21.62,18.38-21.62,27.5c0,10.12,8.5,13.88,26.88,13.88c6.25,0,14.75-0.12,21.62-1.25","M84.24,14.5c2.75,1.75,6,5.38,7.75,8.5","M90.62,9.62c3.06,1.57,6.68,4.82,8.62,7.62"],"ば":["M24.75,17.75c1.25,1.5,1.9,4.25,1.38,6.88c-3.5,17.62-6.98,36.4-4,54.88c2.5,15.5,1.12,2,5.62-6.25","M49.88,37.89c2.41,1.57,4.85,2.41,7.8,1.96c9.36-1.43,17.21-3.19,23.15-4.82c3.12-0.86,5.96-1.29,7.8-1.29","M69.75,16.5c2.26,2.12,2.88,4.12,2.88,6.5c0,2.38,1.5,38.62,1.5,48c0,22.5-30.62,19.62-30.62,10.5c0-9.75,23.88-5.62,29.5-2.88c5.62,2.74,12,8.25,13.38,9.38","M84.75,15.25c2.75,1.75,6,5.38,7.75,8.5","M91.13,10.38c3.06,1.57,6.68,4.82,8.62,7.62"],"び":["M20,25.12c1.25,0.88,3.75,2.25,6.5,1.38c2.75-0.87,7.31-2.38,11.38-4.5c6-3.12,8.42-1.01,4.25,4c-27.13,32.62-23.76,58.5-1.52,62.88c18.07,3.56,37.63-16.38,35.63-56.51c-0.72-14.5-0.17-14.78,4.12-1.75c3.76,11.38,10.26,20.76,16.14,26.5","M86.5,13.5c2.75,1.75,6,5.38,7.75,8.5","M92.87,8.62c3.06,1.57,6.68,4.82,8.62,7.62"],"ぶ":["M42.12,15.62c3.62,3.38,7.5,5.38,12.75,6.12c9.59,1.37,3.5,3.38-1.88,6.12","M43.12,46.88c1.88,4.62,7.5,9.41,14.25,17.5c10.62,12.75,0.5,30-19.12,21.62","M16.5,73.88c0.75,4,1.88,8.12,5,10.12c1.16,0.74,0.12-3.38,13.25-9.12","M79.62,61.88c5.5,3.38,10.28,7.49,11.38,8.88c6.75,8.5-0.25,4.62-4.62,7.12","M73.62,16.25c2.75,1.75,6,5.38,7.75,8.5","M80,11.38c3.06,1.57,6.68,4.82,8.62,7.62"],"べ":["M15,48.75c2.25,1.62,5,1.38,7.62-1c3.89-3.52,6.12-5.75,10.62-9.88c5.88-5.37,8.49-4.75,13.14-0.87c12.12,10.12,30.38,25.12,33.38,27.38c3,2.26,12.37,10.37,13.87,11.62","M66.76,26.75c2.75,1.75,6,5.38,7.75,8.5","M73.13,21.88c3.06,1.57,6.68,4.82,8.62,7.62"],"ぼ":["M24.51,18.75c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.63-6.98,37.4-4,55.88c2.5,15.5,1.12,2,5.62-6.25","M53.08,21.13c1.9,1.28,3.82,1.76,6.14,1.4c7.36-1.17,13.73-2.4,18.41-3.73c2.46-0.7,4.69-1.05,6.13-1.05","M53.83,44.3c2.21,1.44,4.46,1.98,7.16,1.57c8.59-1.31,15.78-2.44,21.23-3.94c2.87-0.79,5.72-1.18,7.41-1.18","M72.51,23c1.38,1.62,1.62,4.12,1.62,6.5c0,2.38,2,35.12,2,44.5c0,17.5-29.88,17.12-29.88,8c0-9.75,21.38-7.88,29.5-2.88c5.33,3.28,12,8.25,13.38,9.38","M87.51,26c2.75,1.75,6,5.38,7.75,8.5","M93.88,21.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ぱ":["M24.51,18c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.62-6.98,36.4-4,54.88c2.5,15.5,1.12,2,5.62-6.25","M49.64,37.89c2.41,1.57,4.85,2.16,7.8,1.71c9.36-1.43,17.46-2.94,23.4-4.57c3.12-0.86,5.96-1.29,7.8-1.29","M69.77,16.5c2.25,2.12,2.88,4.12,2.88,6.5c0,2.38,1.5,38.62,1.5,48c0,22.5-30.62,19.62-30.62,10.5c0-9.75,23.88-5.62,29.5-2.88c5.62,2.74,11.98,8.26,13.36,9.38","M91.01,24.38c-9.62,0-9.25-14.25,0-14.25c9.76-0.01,9.5,14.25,0,14.25"],"ぴ":["M20,25.12c1.25,0.88,3.75,2.25,6.5,1.38c2.75-0.87,7.31-2.38,11.38-4.5c6-3.12,8.42-1.01,4.25,4c-27.13,32.62-23.76,58.5-1.52,62.88c18.07,3.56,37.63-16.38,35.63-56.51c-0.72-14.5-0.17-14.78,4.12-1.75c3.76,11.38,10.26,20.76,16.14,26.5","M93.87,22.12c-9.62,0-9.25-14.25,0-14.25c9.75,0.01,9.5,14.25,0,14.25"],"ぷ":["M42.13,15.62c3.62,3.38,7.5,5.38,12.74,6.13c9.59,1.37,3.5,3.38-1.88,6.12","M43.13,46.88c1.88,4.62,7.5,9.41,14.25,17.5c10.62,12.74,0.49,30-19.13,21.62","M16.5,73.88c0.75,4,1.88,8.12,5,10.12c1.16,0.74,0.12-3.38,13.25-9.12","M79.63,61.88c5.5,3.38,10.28,7.49,11.38,8.88c6.75,8.5-0.25,4.62-4.62,7.12","M80.87,26.62c-9.62,0-9.25-14.25,0-14.25c9.76,0.01,9.5,14.25,0,14.25"],"ぺ":["M15,48.75c2.25,1.62,4.67,1.96,7-0.38c3.62-3.62,7.46-6.54,11.25-10.5c5.5-5.75,8.48-4.75,13.12-0.88c12.12,10.12,30.38,25.12,33.38,27.38c3,2.26,12.38,10.38,13.88,11.63","M73.63,36.75c-9.62,0-9.25-14.25,0-14.25c9.75,0,9.5,14.25,0,14.25"],"ぽ":["M24.51,19c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.62-6.98,37.4-4,55.88c2.5,15.5,1.12,2,5.62-6.25","M53.08,21.38c1.9,1.28,3.82,1.76,6.14,1.4c7.36-1.17,13.73-2.4,18.41-3.73c2.46-0.7,4.69-1.05,6.13-1.05","M53.83,44.55c2.21,1.44,4.46,1.98,7.16,1.57c8.59-1.31,15.78-2.44,21.23-3.94c2.87-0.79,5.72-1.18,7.41-1.18","M72.51,23.25c1.38,1.62,1.62,4.12,1.62,6.5c0,2.38,2,35.12,2,44.5c0,17.5-29.88,17.12-29.88,8c0-9.75,21.38-7.88,29.5-2.88c5.33,3.28,12,8.25,13.38,9.38","M95.13,34.5c-9.62,0-9.25-14.25,0-14.25c9.75,0,9.5,14.25,0,14.25"]}; window.__KV=KVG;
-var ROMA = {'あ':'a','い':'i','う':'u','え':'e','お':'o','か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko','さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to','な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho','ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','や':'ya','ゆ':'yu','よ':'yo','ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro','わ':'wa','を':'wo','ん':'n','が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo','だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo','ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po'};
-var HINT = {'ぢ':'fila da','づ':'fila da','を':'partícula'};
-var ALL = Object.keys(ROMA);
+var KVG = {"あ":["M31.01,33c0.88,0.88,2.75,1.82,5.25,1.75c8.62-0.25,20-2.12,29.5-4.25c1.51-0.34,4.62-0.88,6.62-0.5","M49.76,17.62c0.88,1,1.82,3.26,1.38,5.25c-3.75,16.75-6.25,38.13-5.13,53.63c0.41,5.7,1.88,10.88,3.38,13.62","M65.63,44.12c0.75,1.12,1.16,4.39,0.5,6.12c-4.62,12.26-11.24,23.76-25.37,35.76c-6.86,5.83-15.88,3.75-16.25-8.38c-0.34-10.87,13.38-23.12,32.38-26.74c12.42-2.37,27,1.38,30.5,12.75c4.05,13.18-3.76,26.37-20.88,30.49"],"い":["M21.5,29.66c2.01,2.17,2.61,4.68,2.17,7.43c-3.09,19.16-1.03,32.01,7.93,41.45c6.12,6.45,6.26,3.14,7.04-5.21","M72.96,36.51c9.44,8.05,17.79,18.82,18.41,33.83"],"う":["M42,15.5c5.62,2.12,9.62,3,12.88,3c8.27,0,8,1.12-0.38,5.5","M33,42.38c2.12,1.12,4.12,2.88,8.5,1.38c4.38-1.5,12.75-7.12,18.5-7c5.75,0.12,10.25,5,10.25,18c0,15.49-8.25,30.24-24.37,41.24"],"え":["M40.52,13.25c5.62,2.12,10,3,14.12,3c8.27,0,8,1.12-0.38,5.5","M32.52,45.12c1.88,1.25,4.5,1.75,7.38,0.62c3.29-1.29,17-7.88,21.25-9.88c4.25-2,8.32,0.04,4.38,4.62c-12.26,14.27-27.26,31.52-39.51,44.4c-3.26,3.42-0.58,3.54,1.5,1.37c13.5-14.12,18.12-20.12,23.62-20.12c7.13,0,3.5,16.75,6.75,22.38c3.25,5.63,19.12,3.75,26.12,2.12"],"お":["M22.88,35.12c1.38,1,3.62,2.38,6,2.12c2.38-0.26,19.62-5.12,21.12-5.74c1.5-0.62,4-1.25,5.88-2","M41.5,16.12c2.25,1,3.59,4.39,3.12,7.38c-2.5,16.12-3.37,45.53-2.25,58.38c0.75,8.62-0.64,10.45-7.12,7.12c-5.13-2.62-13.75-8-13.75-12.38c0-7.5,24.38-23.62,44.75-23.62c17.25,0,25,8.25,25,17.25c0,8.25-9.38,18.88-26.75,21","M73,22.12c5.38,2.62,8.88,5.88,10.62,8.25c2.27,3.08,0.38,4.5-1.12,5"],"か":["M24.62,38.62c1.88,1.62,4.65,2.33,8.62,1c25.5-8.5,29.5-4.13,29.5,7.62c0,9.38-1.24,17.46-4.25,25.25c-7.62,19.76-10.87,17.39-16.12,10.89","M48.5,17.5c1,1.38,1.29,4.7,0.5,7.12c-5,15.25-18.02,40.93-19.62,43.88c-3.12,5.75-6.38,11.88-9.38,16.25","M77.37,31.62c7.5,6.88,13.25,15.75,15,24.88"],"き":["M30.5,30.25c1.88,0.75,4.64,1.06,5.88,0.88c6.75-1,22.25-4.5,26.5-6c2.17-0.76,3.5-1.25,4.88-2.12","M36.25,48.7c2.01,0.85,4.97,1.2,6.29,0.99c7.23-1.13,23.82-5.09,28.37-6.79c2.32-0.86,3.75-1.41,5.22-2.4","M42,14.12c1.5,0.88,3.13,2.94,4,5.12c5.5,13.76,16,29.26,26.37,40.76c7.64,8.47,9.12,9.38-6,3.88","M33.75,83.25c10.62,9.75,27.25,8.62,38.12,5"],"く":["M60.66,15c0.5,1.62,0.35,5.44-1,7.38c-6.75,9.62-14.3,19.08-18.62,24.5c-4,5-3.79,7.03-0.88,11c5.5,7.5,12.75,18.75,17.62,27.25c1.48,2.59,2.75,4.75,4.5,8.62"],"け":["M24.67,19.75c1.25,1.5,2.62,3.75,2.12,6.38c-3,15.88-6.5,29.5-4.88,44.62c2.02,18.84,2.25,4.75,6.75-3.5","M53.67,38.62c2.12,1.38,4.28,1.89,6.88,1.5c8.25-1.25,15.39-2.57,20.62-4c2.76-0.74,5.26-1.12,6.88-1.12","M71.67,14.38c2.13,1.37,2.88,3.35,2.88,5.12c0,11.62,0.12,20.38,0.12,30.12c0,20.75-0.62,30.88-12.5,42.25"],"こ":["M34.75,26.75c1.12,0.88,2.91,2.01,6,1.5c7.62-1.25,14.11-2.56,22.38-2.62c15.5-0.12,5.88,5-5.75,9","M30,68.12c2.25,14.5,15.26,17.96,31,16.75c6.5-0.5,11.88-1.25,17.62-2.88"],"さ":["M27,38.9c2.42,1.33,5.38,1.47,8.32,1.06c8.79-1.24,28.67-7.76,34.15-10.43c2.79-1.36,3.78-1.91,6.28-3.53","M41.5,13.88c1.5,0.88,3.63,2.94,4.5,5.12c5.5,13.75,15.25,27.62,26.87,39.5c7.98,8.15,6.38,10-6,3.12","M35.25,80.5c4.5,11.75,20.88,12.5,38.38,7.5"],"し":["M39.12,17.5c1.25,3.12,0.93,6.74,0.38,10.25c-2.12,13.5-3,26.5-3,39.12c0,27.38,19.88,30.12,45.5,17.25"],"す":["M15.5,37.12c2.88,2.12,6.94,1.51,12.75,0.25c16.12-3.5,36.14-5.38,46.62-6.5c7-0.75,11.88-0.62,17.75,0.12","M57.62,13.38c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,35.12,0,40.75c0,14.62-15.62,16.38-15.62,1.75c0-14.25,18-14.12,18,6.38c0,13.25-7.75,21.5-16,28.38"],"せ":["M16.5,49.93c2.88,2.42,6.86,1.57,12.75,0.53c19-3.34,33-5.72,47.12-7.64c6.99-0.95,11.88-1.21,17.75-0.36","M69.74,17.75c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,17.88,0,23.5c0,25.62-5.75,23.25-11.88,19","M35.62,26.25c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,28.38,0,34c0,14.5,6.38,19.55,20.14,19.55c10.24,0,13.74,0.07,22.61-1.68"],"そ":["M38.4,22c1.88,1.25,4.98,1.05,7.5,0.38c6.5-1.75,13.25-3.75,19.38-5.38c4.63-1.23,7.18,2.06,3.62,5.25c-12.12,10.87-31.14,24.4-40,30.25c-6.25,4.12-5.88,5.75,1.38,3.88c17.08-4.42,35.96-8.68,50.12-10.38c9.38-1.12,9.62,0.12,0.5,1.38c-15.82,2.17-34.38,14.25-34.38,26.5c0,12.88,11.62,20.38,31.5,16.62"],"た":["M24.38,35.38c1.38,0.62,3.88,1.51,6.38,1.12c6.5-1,16.25-2.88,24.88-4.75c2.64-0.57,5.38-1.5,7.62-2.38","M45,16.88c0.75,1.25,0.87,3.62,0.38,5.25c-6.35,20.94-12.75,36.37-18.88,52.37c-1.36,3.56-4.75,11.75-6,14.62","M56.38,53.25c12.38-2.75,18.25-3.7,23.62-3.12c15.12,1.62-1.12,2.25-4.25,4.88","M54.13,82.25c4.38,7,14.25,8.12,34.5,5.62"],"ち":["M24.5,32.62c1.38,0.62,3.88,1.51,6.38,1.12c6.5-1,18.25-4.12,26.88-6c2.64-0.57,5.38-1.5,7.62-2.38","M45.62,15.62c0.75,1.25,0.71,3.58,0.38,5.25c-3,15-4.25,22.59-8.38,38.62c-3.25,12.62-5.38,11.12,3.62,4.38c8.29-6.21,19.75-9.5,28.5-9.5c8.62,0,14.58,5.88,14.5,14.5c-0.12,13.5-16.5,20.62-29.88,23.25"],"つ":["M14,44.75c1.88,1.62,4.68,2.09,8.12,0.62c17.88-7.62,30-11.12,44.88-10.88c12.56,0.21,22.98,7.17,22.87,19.17c-0.18,18.77-24.75,28.71-45.01,32.08"],"て":["M20.5,26.38c1.87,1.62,4.42,1.97,8.12,1.37c21.75-3.5,33-5.12,50.12-8.38c12.34-2.34,13-0.88,0.38,1.38c-17.89,3.19-33.78,19.12-33.78,37.62c0,20.5,17.91,30.25,35.16,30.25"],"と":["M35.5,18.38c1.74,0.74,3.62,2.62,4.12,5.37c0.5,2.75,4.75,25,5.38,28.12","M78.12,25.5c0.25,1.88,0.04,4.09-2.25,5.75c-6.37,4.63-13.22,8.49-22.75,15.25c-12.88,9.12-21.62,18.38-21.62,27.5c0,10.12,8.5,13.88,26.88,13.88c6.25,0,14.75-0.12,21.62-1.25"],"な":["M22.88,28.96c1.18,0.58,3.3,1.1,5.47,1.05c5.53-0.13,10.9-0.98,16.52-2.42c4.82-1.23,9.13-3.12,11.38-4.22","M42.99,14c0.63,0.89,0.56,2.52,0.31,3.72c-2.96,14.16-7.95,26.56-14.25,37.87c-2.05,3.69-4.25,7.24-6.55,10.65","M72.26,23.25c6.88,2.5,12.62,5.62,14.75,9.5c4.06,7.41-0.25,3.38-3.5,3.88","M68.88,44.62c-1,1.88-2.14,5.24-1.88,8.25c0.62,7,1.5,13.12,1.5,20.62c0,20-27.88,19.75-27.88,9.38c0-5.62,8.25-8.25,13.88-8.25c8.75,0,21.5,3.25,29.75,11.5"],"に":["M24.53,22.75c1.25,1.5,1.62,3.75,1.12,6.38c-3,15.88-9,32.5-7.38,47.62c2.02,18.84,4.5,5.75,8.5-3.5","M53.2,30.64c0.96,0.79,2.44,1.58,5.1,1.35c6.98-0.61,15.01-3.3,22.04-3.36c13.19-0.11,1.5,3.75-8.39,7.35","M52.53,68c1.76,12.92,11.92,16.01,24.23,14.93c5.08-0.45,8.9-0.8,14.27-2.06"],"ぬ":["M25.38,28.5c2,1.38,2.97,3.23,3.38,5.88c1.87,12.18,4.12,23.92,8.54,34.67c1.79,4.36,3.96,8.33,6.84,12.46","M57.12,19.25c0.88,2.12,1.06,3.79,0.62,5.88c-3.12,15-13.14,39.81-18.12,48.62c-11.87,21-20.62,1.25-20.62-4.5c0-22.63,43.75-44.25,62.36-29.59c7.66,6.03,9.8,14.58,9.14,23.34c-2,26.75-32.88,28.38-32.88,16.88c0-9.38,17.38-7.12,27.12-1.12c3.1,1.91,7.25,5.25,9.5,7.5"],"ね":["M33.29,14.5c1.62,1.62,2.1,3.21,1.88,5.88c-1.03,11.93-2.06,31.66-2.53,53.12c-0.1,4.62-0.18,9.31-0.22,14","M17.16,37.88c1.62,0.88,3.25,1.38,5.62,0.75c2.14-0.56,7.8-2.31,12.37-4.03c6.26-2.35,6.88-1.47,3.12,3.63c-5.56,7.53-13.02,17.38-18.48,26.77c-5.6,9.62-3.45,8.3,2,3c19.12-18.62,38.5-39.12,54.12-39.12c11.38,0,12.88,11.25,12.88,32.5c0,28.62-30.18,24.88-30.18,16.26c0-9.63,18.73-7.82,28.06-1.88c2.75,1.75,5.88,4.88,7.5,6.75"],"の":["M53.82,28.62c1,1.5,1.34,4.12,0.88,6.62c-1.75,9.5-6.89,25-10.75,33.12c-9.63,20.26-16.55,14.74-24.38-1.98c-9.13-19.5,23.5-48.88,50.63-40.38c32.38,10.15,28,54.62-4.75,60.88"],"は":["M24.51,18c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.62-6.98,36.4-4,54.88c2.5,15.5,1.12,2,5.62-6.25","M49.64,37.89c2.41,1.57,4.85,2.16,7.8,1.71c9.36-1.43,17.46-2.94,23.4-4.57c3.12-0.86,5.96-1.29,7.8-1.29","M69.77,16.5c2.25,2.12,2.88,4.12,2.88,6.5c0,2.38,1.5,38.62,1.5,48c0,22.5-30.62,19.62-30.62,10.5c0-9.75,23.88-5.62,29.5-2.88c5.62,2.74,11.98,8.26,13.36,9.38"],"ひ":["M20,25.12c1.25,0.88,3.75,2.25,6.5,1.38c2.75-0.87,7.31-2.38,11.38-4.5c6-3.12,8.42-1.01,4.25,4c-27.13,32.62-23.76,58.5-1.52,62.88c18.07,3.56,37.63-16.38,35.63-56.51c-0.72-14.5-0.17-14.78,4.12-1.75c3.76,11.38,10.26,20.76,16.14,26.5"],"ふ":["M42.63,15.62c3.62,3.38,7.5,5.38,12.74,6.13c9.59,1.37,3.5,3.38-1.88,6.12","M43.63,46.88c1.88,4.62,7.5,9.41,14.25,17.5c10.62,12.74,0.49,30-19.13,21.62","M16.5,73.38c0.75,4,1.88,8.12,5,10.12c1.16,0.74,0.12-3.38,13.25-9.12","M80.13,61.88c5.12,3.38,10.28,7.49,11.38,8.88c6.75,8.5-0.25,4.62-4.62,7.12"],"へ":["M15,48.75c2.25,1.62,4.67,1.96,7-0.38c3.62-3.62,7.46-6.54,11.25-10.5c5.5-5.75,8.48-4.75,13.12-0.88c12.12,10.12,30.38,25.12,33.38,27.38c3,2.26,12.37,10.38,13.87,11.63"],"ほ":["M24.51,18.75c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.63-6.98,37.4-4,55.88c2.5,15.5,1.12,2,5.62-6.25","M53.08,21.13c1.9,1.28,3.82,1.76,6.14,1.4c7.36-1.17,13.73-2.4,18.41-3.73c2.46-0.7,4.69-1.05,6.13-1.05","M53.83,44.3c2.21,1.44,4.46,1.98,7.16,1.57c8.59-1.31,15.78-2.44,21.23-3.94c2.87-0.79,5.72-1.18,7.41-1.18","M72.51,23c1.38,1.62,1.62,4.12,1.62,6.5c0,2.38,2,35.12,2,44.5c0,17.5-29.88,17.12-29.88,8c0-9.75,21.38-7.88,29.5-2.88c5.33,3.28,12,8.25,13.38,9.38"],"ま":["M29.83,32.28c2.2,1.15,4.43,1.5,7.14,1.26c11.54-1.04,25.94-3.12,34.66-4.85c2.87-0.57,5.45-0.44,7.13-0.44","M33.83,51.84c2.45,1.61,4.94,1.72,7.94,1.26c9.52-1.46,17.87-3.1,27.03-5.16c3.22-0.72,6.34-1.32,8.21-1.32","M55.81,14c1.52,1.8,1.8,4.57,1.8,7.19c0,2.63,0.46,43.88,0.46,54.25c0,21.3-30.07,19.96-30.07,9.86c0-10.79,25.88-9.93,38.57-3.18c6.12,3.25,11.55,6.38,14.8,9.13"],"み":["M32.5,26c1.88,1.75,4.06,1.7,6.88,1.25c3.88-0.62,7.62-1.75,11.88-3.12c4.26-1.37,6.25-0.12,4.5,5.12c-1.75,5.24-6.66,17.39-12,30.12c-13.63,32.51-29.26,29.26-29.26,18.63c0-14.25,20.48-15.36,33-13.5c18.5,2.75,30,6.62,44.38,14.25","M79.38,54.75c0.75,2.38,0.49,4.37,0,6.25c-2.12,8.12-7.5,25-22.12,33.75"],"む":["M19.59,31.65c2.1,1.55,4.24,1.66,6.81,1.21c8.17-1.41,15.33-2.98,23.19-4.96c2.76-0.69,5.44-1.27,7.05-1.27","M37.02,15.5c1.62,1.25,2.31,2.88,2.12,5.25c-0.88,11.12-1.5,20.75-4,34.88c-3.61,20.44-19.25,16.99-18.62,7.37c0.5-7.74,6.25-12.86,12.62-13.5c5-0.5,14.28,1.93,5.88,15c-12.62,19.62-11.42,24.51,5.11,25.54c10.98,0.68,19.26,0.72,28.49-0.92c14.15-2.5,7.4-2.63,7.4-11.13","M78.52,36.25c6.88,3.12,11.71,5.95,14.88,10.12c6.25,8.25-1.38,3.62-4.5,4.5"],"め":["M27.48,31.75c1.75,1,2.41,3.09,2.5,5.25c0.5,11.62,2.75,23.5,7.25,31.38c1.39,2.44,5.38,8.5,7.25,10.38","M59.6,19.38c1,1.5,1.35,4.12,0.88,6.62c-2.75,14.62-13.62,37.75-20.1,47.24c-12.28,17.14-16.78,13.14-22.28,0.64c-5.38-15.38,26.4-42.18,53.42-35.28c29.08,8.27,23.96,46.02-7.98,50.15"],"も":["M49.17,14.75c1.88,1.88,1.86,4.52,1.12,8c-3,14.25-5,26.62-7,42.12c-2.55,19.73-0.75,29.88,17,29.86c20.25-0.02,28.63-13.11,20.01-35.73","M26.54,34.62c1.12,0.88,2.87,2.21,6,2c11.12-0.75,20-2.12,27.74-3.46c3.88-0.67,5.88-1.17,8.88-1.04","M26.42,53.38c-1.5,4,1,6.75,7.75,6.75c8.75,0,17.62-1,22.88-1.88c2.01-0.33,5.38-1,7.5-1.75"],"や":["M18,49.38c1.88,1.62,5.25,2.5,8.62,0.88c18.51-8.88,35.76-19.38,50.83-19.26c9.02,0.14,16.01,4.13,15.93,12.29c0,8.33-10.88,16.58-24.5,17.83","M47.13,15.88c5.12,0.88,10.41,4.05,11.5,6.62c2.12,5-1,2.38-2.88,2.62","M30,24.38c2.38,1.88,3.28,2.87,3.88,5.25c2.62,10.5,11.12,41.12,14.75,52.5c0.65,2.04,1.88,6.25,2.88,9.38"],"ゆ":["M21.05,25.38c1.38,1.5,2.02,4.13,1.5,6.25c-2.88,11.75-4,22.25-2.12,35c2.77,18.85,1.12,3.88,3.25-1.5c9-22.75,27.24-34.5,44.38-34.5c16.88,0,21.88,11.38,21.88,20.25c0,27.38-30.88,29.62-43,16.75","M58.42,16.75c2.62,1.75,3.17,3.13,3.5,7.12c0.88,10.5,1.4,18.72,1.62,29.38c0.5,24-6.25,32-12.38,39.25"],"よ":["M58.24,35.38c7.5-1.28,13.74-2.63,18.5-4.1c2.5-0.77,4.77-1.15,6.25-1.15","M54.62,13.88c2.25,2.12,2.98,4.13,2.88,6.5c-0.75,17-0.12,34.88,1.39,53.5c1.88,23.07-34.89,20.88-34.89,11.5c0-12,26.25-8,35.98-4.12c8.1,3.23,11.52,4.88,18.52,10.38"],"ら":["M35.33,15c3.75,3,9.22,4.41,16.5,4.25c11.12-0.25-0.25,2.38-1.25,3.5","M35.83,35.75c-2.14,4.34-2.79,8.67-3.11,13.24c-0.42,5.84-0.31,12.05-2.14,19.13c-3.16,12.27,1.49,4.77,3,3.5c11.88-10,21.7-12.67,32.61-12.49c9.21,0.15,16.85,5.19,16.76,13.88c-0.12,13.6-14.24,21.49-32.49,22.49"],"り":["M38.75,25.25c1.25,1.5,2.24,4.03,1.62,6.62c-2.88,12.13-6.29,29.65-4.25,42.38c2,12.5,1.75-0.75,5.62-6.25","M69.37,18.75c2.25,2.12,2.88,4.12,2.88,6.5c0,2.38,0,26.38,0,35.75c0,16.5-5,25.75-12.62,33.12"],"る":["M34.31,20.38c1.75,1.25,4.62,2.62,8.5,1.5c3.88-1.12,9.62-2.5,15.62-4.62c6-2.12,7.5-0.12,4.38,4.25c-3.12,4.37-18.89,24.62-27.75,34c-8.5,9-13.09,11.89,0.75,3.25c15.62-9.75,43-10.88,43,13.38c0,22.5-40.88,24.5-40.88,12.62c0-11.25,18.12-8.75,24.38-0.38"],"れ":["M34.48,13c1.5,1.38,2.83,3.74,2.5,6.38c-0.5,4-2.75,44.5-2.75,52.88c0,8.38,0.12,16.62,0.12,19.5","M16.98,40.75c2.12,1.38,3.74,1.46,7.5,0c4.5-1.75,6.55-2.66,13-5.5c4.25-1.88,4.4,0.24,2.5,3.5c-5.25,9-10.5,16.75-18.88,27.62c-7.55,9.81-6.93,12.85,3.25,3.12c14-13.38,20.34-19.76,33.88-32.5c6.38-6,19.39-12.09,18.14,0.88c-1.02,10.63-1.89,22.13-2.29,30.75c-1.02,21.71,11.53,18,20.15,8.63"],"ろ":["M36.95,21.88c1.5,2,4.62,3.62,8.5,2.5c3.88-1.12,8.12-2.25,14.12-4.38c6-2.13,6.53-0.1,3.38,4.25c-7.88,10.88-18,22.75-27.5,35.25c-7.49,9.86-10.68,11.32,2.88,2.25c17.38-11.62,46.62-14,46.62,8.12c0,15.62-16,22.5-32.12,25.12"],"わ":["M38.53,14.75c1.5,1.38,2.22,3.73,2,6.38c-1,11.87-2.75,44.49-2.75,52.87c0,8.38-0.62,16.62-0.62,19.5","M17.53,40.75c2.12,1.38,3.68,1.3,7.5,0c5.88-2,9.8-3.16,16.25-6c4.25-1.88,6.12,0,2.75,4c-6.72,7.96-13,16.5-22.12,27.88c-7.75,9.66-7.54,12.21,3,2.88c21.88-19.38,49.75-35.62,63.5-21c14.36,15.27,1.62,36.62-23.38,42.62"],"を":["M28.56,27.87c1.62,1.13,3.17,1.64,6.01,1.12c10.86-1.99,16.74-3.37,24.71-4.72c3.64-0.62,5.65-0.93,8.4-0.75","M49.93,14.38c0.75,1,1.48,3.22,0.38,5.62c-4.62,10.12-10,20.75-17.12,30.25c-9.25,12.33-9.25,11.19,2.12,2.5c9-6.88,23.75-12.12,22.88,19.88","M83.06,39.88c0.62,1.75,0,4-3,5.75c-3,1.75-49.62,24.16-44.75,38.25c3.28,9.48,17.93,9.12,29.98,7.75c4.48-0.51,9.15-1.12,12.4-1.75"],"ん":["M56.35,16.5c0.75,1.75,1.13,5.83-0.38,8.25c-7,11.25-27.22,43.47-33.88,54.37c-9,14.75-7.62,16.25,1.5,1.25c17.86-29.36,32-23.76,32-6.75c0,25,19,26.5,34.25-5"],"が":["M24.62,38.62c1.88,1.62,4.65,2.33,8.62,1c25.5-8.5,29.5-4.13,29.5,7.62c0,9.38-1.24,17.46-4.25,25.25c-7.62,19.76-10.87,17.39-16.12,10.89","M48.5,17.5c1,1.38,1.29,4.7,0.5,7.12c-5,15.25-18.02,40.93-19.62,43.88c-3.12,5.75-6.38,11.88-9.38,16.25","M77.37,31.62c7.5,6.88,13.25,15.75,15,24.88","M80.5,18.25c2.75,1.75,6,5.38,7.75,8.5","M86.87,13.38c3.06,1.57,6.68,4.82,8.62,7.62"],"ぎ":["M30.5,30.5c1.88,0.75,4.64,1.06,5.88,0.88c6.75-1,22.25-4.5,26.5-6c2.17-0.76,3.5-1.25,4.88-2.12","M36.25,48.95c2.01,0.85,4.97,1.2,6.29,0.99c7.23-1.13,23.82-5.09,28.37-6.79c2.32-0.86,3.75-1.41,5.22-2.4","M42,14.38c1.5,0.88,3.13,2.94,4,5.12c5.5,13.75,16,29.25,26.38,40.75c7.64,8.47,9.12,9.38-6,3.88","M33.75,83.5c10.62,9.75,27.25,8.62,38.12,5","M77.37,19c2.75,1.75,6,5.38,7.75,8.5","M83.75,14.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ぐ":["M60.66,15c0.5,2.12,0.75,5-1,7.38c-6.97,9.46-14.29,19.09-18.62,24.5c-4,5-3.79,7.03-0.88,11c5.5,7.5,12.75,18.75,17.62,27.25c1.48,2.59,2.75,4.75,4.5,8.62","M73.54,30c2.75,1.75,6,5.38,7.75,8.5","M79.91,25.12c3.06,1.57,6.68,4.82,8.62,7.62"],"げ":["M24.91,20.25c1.25,1.5,2.37,3.75,1.88,6.38c-3,15.88-6.5,29.5-4.88,44.62c2.02,18.84,2.25,4.75,6.75-3.5","M53.67,39.12c2.12,1.38,4.28,1.89,6.88,1.5c8.25-1.25,15.39-2.57,20.62-4c2.75-0.75,5.25-1.12,6.88-1.12","M71.67,14.62c2.12,1.38,2.87,3.61,2.87,5.38c0,11.62,0.12,20.38,0.12,30.12c0,20.75-0.62,30.88-12.5,42.25","M86.17,13c2.75,1.75,6,5.38,7.75,8.5","M92.54,8.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ご":["M34.75,27c1.12,0.88,2.91,2.01,6,1.5c7.62-1.25,14.11-2.56,22.38-2.62c15.5-0.12,5.88,5-5.75,9","M30,68.38c2.25,14.5,15.26,17.96,31,16.75c6.5-0.5,11.88-1.25,17.62-2.88","M80.37,16.25c2.75,1.75,6,5.38,7.75,8.5","M86.75,11.38c3.06,1.57,6.68,4.82,8.62,7.62"],"ざ":["M27,39.15c2.42,1.33,5.38,1.47,8.32,1.06c8.79-1.24,28.67-8.01,34.15-10.68c2.79-1.36,3.78-1.91,6.28-3.53","M41.5,14.12c1.5,0.88,3.63,2.95,4.5,5.13c5.5,13.75,15.25,27.63,26.88,39.5c7.98,8.15,6.38,10-6,3.12","M35.25,80.75c4.5,11.75,20.88,12.5,38.38,7.5","M79.88,14.25c2.75,1.75,6,5.38,7.75,8.5","M86.25,9.38c3.06,1.57,6.68,4.82,8.62,7.62"],"じ":["M39.12,17.25c1.25,3.12,0.93,6.74,0.38,10.25c-2.12,13.5-3,26.5-3,39.12c0,27.38,19.88,30.12,45.5,17.25","M64.24,27c2.75,1.75,6,5.38,7.75,8.5","M70.62,22.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ず":["M15.5,37.12c2.88,2.12,6.94,1.51,12.75,0.25c16.12-3.5,36.14-5.38,46.62-6.5c7-0.75,11.88-0.62,17.75,0.12","M57.62,13.38c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,35.12,0,40.75c0,14.62-15.62,16.38-15.62,1.75c0-14.25,18-14.12,18,6.38c0,13.25-7.75,21.5-16,28.38","M77,13c2.75,1.75,6,5.38,7.75,8.5","M83.37,8.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ぜ":["M16.5,49.93c2.88,2.42,6.86,1.57,12.75,0.53c19-3.34,32.5-5.34,47.12-7.64c6.97-1.1,11.88-1.21,17.75-0.36","M69.74,17.75c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,17.88,0,23.5c0,25.62-5.75,23.25-11.88,19","M35.62,26.25c2,1.5,2.75,3.25,2.75,5.88c0,10.38,0,28.38,0,34c0,14.5,6.38,19.55,20.14,19.55c10.24,0,13.74,0.07,22.61-1.68","M84.5,17.25c2.75,1.75,6,5.38,7.75,8.5","M90.87,12.38c3.06,1.57,6.68,4.82,8.62,7.62"],"ぞ":["M38.4,22c1.88,1.25,4.98,1.05,7.5,0.38c6.5-1.75,13.25-3.75,19.38-5.38c4.63-1.23,7.18,2.06,3.62,5.25c-12.12,10.87-31.14,24.4-40,30.25c-6.25,4.12-5.88,5.75,1.38,3.88c17.08-4.42,35.96-8.68,50.12-10.38c9.38-1.12,9.62,0.12,0.5,1.38c-15.82,2.17-34.38,14.25-34.38,26.5c0,12.88,11.62,20.38,31.5,16.62","M81.78,26.75c2.75,1.75,6,5.38,7.75,8.5","M88.15,21.88c3.06,1.57,6.68,4.82,8.62,7.62"],"だ":["M24.38,35.38c1.38,0.62,3.88,1.51,6.38,1.12c6.5-1,16.25-2.88,24.88-4.75c2.64-0.57,5.38-1.5,7.62-2.38","M45,16.88c0.75,1.25,0.87,3.62,0.38,5.25c-6.35,20.94-12.75,36.37-18.88,52.37c-1.36,3.56-4.75,11.75-6,14.62","M56.38,53.25c12.38-2.75,18.25-3.7,23.62-3.12c15.12,1.62-1.12,2.25-4.25,4.88","M54.13,82.25c4.38,7,14.25,8.12,34.5,5.62","M76,22.5c2.75,1.75,6,5.38,7.75,8.5","M82.38,17.62c3.06,1.57,6.68,4.82,8.62,7.62"],"ぢ":["M24.5,32.88c1.38,0.62,3.88,1.51,6.38,1.12c6.5-1,18.25-4.12,26.88-6c2.64-0.57,5.38-1.5,7.62-2.38","M45.63,15.88c0.75,1.25,0.71,3.58,0.38,5.25c-3,15-4.25,22.59-8.38,38.62c-3.26,12.63-5.38,11.13,3.62,4.37c8.29-6.21,19.75-9.5,28.5-9.5c8.62,0,14.58,5.88,14.5,14.5c-0.12,13.5-16.5,20.62-29.88,23.25","M74.63,21.75c2.75,1.75,6,5.38,7.75,8.5","M81,16.88c3.06,1.57,6.68,4.82,8.62,7.62"],"づ":["M14,44.75c1.88,1.62,4.68,2.09,8.12,0.62c17.88-7.62,30-11.12,44.88-10.88c12.56,0.21,22.98,7.17,22.87,19.17c-0.18,18.77-24.75,28.71-45.01,32.08","M81,18c2.75,1.75,6,5.38,7.75,8.5","M87.38,13.12c3.06,1.57,6.68,4.82,8.62,7.62"],"で":["M20.5,26.38c1.87,1.62,4.42,1.97,8.12,1.37c21.75-3.5,33-5.12,50.12-8.38c12.34-2.34,13-0.88,0.38,1.38c-17.89,3.19-33.78,19.12-33.78,37.62c0,20.5,17.91,30.25,35.16,30.25","M75,41.75c2.75,1.75,6,5.38,7.75,8.5","M81.37,36.88c3.06,1.57,6.68,4.82,8.62,7.62"],"ど":["M35.5,18.38c1.74,0.74,3.62,2.62,4.12,5.37c0.5,2.75,4.75,25,5.38,28.12","M78.12,25.5c0.25,1.88,0.04,4.09-2.25,5.75c-6.37,4.63-13.21,8.49-22.75,15.25c-12.88,9.12-21.62,18.38-21.62,27.5c0,10.12,8.5,13.88,26.88,13.88c6.25,0,14.75-0.12,21.62-1.25","M84.24,14.5c2.75,1.75,6,5.38,7.75,8.5","M90.62,9.62c3.06,1.57,6.68,4.82,8.62,7.62"],"ば":["M24.75,17.75c1.25,1.5,1.9,4.25,1.38,6.88c-3.5,17.62-6.98,36.4-4,54.88c2.5,15.5,1.12,2,5.62-6.25","M49.88,37.89c2.41,1.57,4.85,2.41,7.8,1.96c9.36-1.43,17.21-3.19,23.15-4.82c3.12-0.86,5.96-1.29,7.8-1.29","M69.75,16.5c2.26,2.12,2.88,4.12,2.88,6.5c0,2.38,1.5,38.62,1.5,48c0,22.5-30.62,19.62-30.62,10.5c0-9.75,23.88-5.62,29.5-2.88c5.62,2.74,12,8.25,13.38,9.38","M84.75,15.25c2.75,1.75,6,5.38,7.75,8.5","M91.13,10.38c3.06,1.57,6.68,4.82,8.62,7.62"],"び":["M20,25.12c1.25,0.88,3.75,2.25,6.5,1.38c2.75-0.87,7.31-2.38,11.38-4.5c6-3.12,8.42-1.01,4.25,4c-27.13,32.62-23.76,58.5-1.52,62.88c18.07,3.56,37.63-16.38,35.63-56.51c-0.72-14.5-0.17-14.78,4.12-1.75c3.76,11.38,10.26,20.76,16.14,26.5","M86.5,13.5c2.75,1.75,6,5.38,7.75,8.5","M92.87,8.62c3.06,1.57,6.68,4.82,8.62,7.62"],"ぶ":["M42.12,15.62c3.62,3.38,7.5,5.38,12.75,6.12c9.59,1.37,3.5,3.38-1.88,6.12","M43.12,46.88c1.88,4.62,7.5,9.41,14.25,17.5c10.62,12.75,0.5,30-19.12,21.62","M16.5,73.88c0.75,4,1.88,8.12,5,10.12c1.16,0.74,0.12-3.38,13.25-9.12","M79.62,61.88c5.5,3.38,10.28,7.49,11.38,8.88c6.75,8.5-0.25,4.62-4.62,7.12","M73.62,16.25c2.75,1.75,6,5.38,7.75,8.5","M80,11.38c3.06,1.57,6.68,4.82,8.62,7.62"],"べ":["M15,48.75c2.25,1.62,5,1.38,7.62-1c3.89-3.52,6.12-5.75,10.62-9.88c5.88-5.37,8.49-4.75,13.14-0.87c12.12,10.12,30.38,25.12,33.38,27.38c3,2.26,12.37,10.37,13.87,11.62","M66.76,26.75c2.75,1.75,6,5.38,7.75,8.5","M73.13,21.88c3.06,1.57,6.68,4.82,8.62,7.62"],"ぼ":["M24.51,18.75c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.63-6.98,37.4-4,55.88c2.5,15.5,1.12,2,5.62-6.25","M53.08,21.13c1.9,1.28,3.82,1.76,6.14,1.4c7.36-1.17,13.73-2.4,18.41-3.73c2.46-0.7,4.69-1.05,6.13-1.05","M53.83,44.3c2.21,1.44,4.46,1.98,7.16,1.57c8.59-1.31,15.78-2.44,21.23-3.94c2.87-0.79,5.72-1.18,7.41-1.18","M72.51,23c1.38,1.62,1.62,4.12,1.62,6.5c0,2.38,2,35.12,2,44.5c0,17.5-29.88,17.12-29.88,8c0-9.75,21.38-7.88,29.5-2.88c5.33,3.28,12,8.25,13.38,9.38","M87.51,26c2.75,1.75,6,5.38,7.75,8.5","M93.88,21.12c3.06,1.57,6.68,4.82,8.62,7.62"],"ぱ":["M24.51,18c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.62-6.98,36.4-4,54.88c2.5,15.5,1.12,2,5.62-6.25","M49.64,37.89c2.41,1.57,4.85,2.16,7.8,1.71c9.36-1.43,17.46-2.94,23.4-4.57c3.12-0.86,5.96-1.29,7.8-1.29","M69.77,16.5c2.25,2.12,2.88,4.12,2.88,6.5c0,2.38,1.5,38.62,1.5,48c0,22.5-30.62,19.62-30.62,10.5c0-9.75,23.88-5.62,29.5-2.88c5.62,2.74,11.98,8.26,13.36,9.38","M91.01,24.38c-9.62,0-9.25-14.25,0-14.25c9.76-0.01,9.5,14.25,0,14.25"],"ぴ":["M20,25.12c1.25,0.88,3.75,2.25,6.5,1.38c2.75-0.87,7.31-2.38,11.38-4.5c6-3.12,8.42-1.01,4.25,4c-27.13,32.62-23.76,58.5-1.52,62.88c18.07,3.56,37.63-16.38,35.63-56.51c-0.72-14.5-0.17-14.78,4.12-1.75c3.76,11.38,10.26,20.76,16.14,26.5","M93.87,22.12c-9.62,0-9.25-14.25,0-14.25c9.75,0.01,9.5,14.25,0,14.25"],"ぷ":["M42.13,15.62c3.62,3.38,7.5,5.38,12.74,6.13c9.59,1.37,3.5,3.38-1.88,6.12","M43.13,46.88c1.88,4.62,7.5,9.41,14.25,17.5c10.62,12.74,0.49,30-19.13,21.62","M16.5,73.88c0.75,4,1.88,8.12,5,10.12c1.16,0.74,0.12-3.38,13.25-9.12","M79.63,61.88c5.5,3.38,10.28,7.49,11.38,8.88c6.75,8.5-0.25,4.62-4.62,7.12","M80.87,26.62c-9.62,0-9.25-14.25,0-14.25c9.76,0.01,9.5,14.25,0,14.25"],"ぺ":["M15,48.75c2.25,1.62,4.67,1.96,7-0.38c3.62-3.62,7.46-6.54,11.25-10.5c5.5-5.75,8.48-4.75,13.12-0.88c12.12,10.12,30.38,25.12,33.38,27.38c3,2.26,12.38,10.38,13.88,11.63","M73.63,36.75c-9.62,0-9.25-14.25,0-14.25c9.75,0,9.5,14.25,0,14.25"],"ぽ":["M24.51,19c1.25,1.5,2.15,4,1.62,6.62c-3.5,17.62-6.98,37.4-4,55.88c2.5,15.5,1.12,2,5.62-6.25","M53.08,21.38c1.9,1.28,3.82,1.76,6.14,1.4c7.36-1.17,13.73-2.4,18.41-3.73c2.46-0.7,4.69-1.05,6.13-1.05","M53.83,44.55c2.21,1.44,4.46,1.98,7.16,1.57c8.59-1.31,15.78-2.44,21.23-3.94c2.87-0.79,5.72-1.18,7.41-1.18","M72.51,23.25c1.38,1.62,1.62,4.12,1.62,6.5c0,2.38,2,35.12,2,44.5c0,17.5-29.88,17.12-29.88,8c0-9.75,21.38-7.88,29.5-2.88c5.33,3.28,12,8.25,13.38,9.38","M95.13,34.5c-9.62,0-9.25-14.25,0-14.25c9.75,0,9.5,14.25,0,14.25"]};
+
+/* ================= Dades ================= */
+var ROW_DEFS = [
+  ['a','あ',0,[['あ','a'],['い','i'],['う','u'],['え','e'],['お','o']]],
+  ['ka','か',0,[['か','ka'],['き','ki'],['く','ku'],['け','ke'],['こ','ko']]],
+  ['sa','さ',0,[['さ','sa'],['し','shi'],['す','su'],['せ','se'],['そ','so']]],
+  ['ta','た',0,[['た','ta'],['ち','chi'],['つ','tsu'],['て','te'],['と','to']]],
+  ['na','な',0,[['な','na'],['に','ni'],['ぬ','nu'],['ね','ne'],['の','no']]],
+  ['ha','は',0,[['は','ha'],['ひ','hi'],['ふ','fu'],['へ','he'],['ほ','ho']]],
+  ['ma','ま',0,[['ま','ma'],['み','mi'],['む','mu'],['め','me'],['も','mo']]],
+  ['ya','や',0,[['や','ya'],null,['ゆ','yu'],null,['よ','yo']]],
+  ['ra','ら',0,[['ら','ra'],['り','ri'],['る','ru'],['れ','re'],['ろ','ro']]],
+  ['wa','わ',0,[['わ','wa'],null,null,null,['を','wo','partícula, sona o']]],
+  ['n','ん',0,[['ん','n'],null,null,null,null]],
+  ['ga','が',1,[['が','ga'],['ぎ','gi'],['ぐ','gu'],['げ','ge'],['ご','go']]],
+  ['za','ざ',1,[['ざ','za'],['じ','ji'],['ず','zu'],['ぜ','ze'],['ぞ','zo']]],
+  ['da','だ',1,[['だ','da'],['ぢ','ji','fila da, poc freqüent'],['づ','zu','fila da, poc freqüent'],['で','de'],['ど','do']]],
+  ['ba','ば',1,[['ば','ba'],['び','bi'],['ぶ','bu'],['べ','be'],['ぼ','bo']]],
+  ['pa','ぱ',1,[['ぱ','pa'],['ぴ','pi'],['ぷ','pu'],['ぺ','pe'],['ぽ','po']]]
+];
+var ROWS=[], ALL=[], BY_K={};
+ROW_DEFS.forEach(function(d){
+  var row={id:d[0], head:d[1], dak:!!d[2], cells:[]};
+  d[3].forEach(function(c){
+    if(!c){ row.cells.push(null); return; }
+    var it={k:c[0], r:c[1], hint:c[2]||'', row:d[0], dak:!!d[2], st:KVG[c[0]].length};
+    row.cells.push(it); ALL.push(it); BY_K[it.k]=it;
+  });
+  ROWS.push(row);
+});
+var BASE_IDS=ROWS.filter(function(r){return !r.dak;}).map(function(r){return r.id;});
+var ALL_IDS=ROWS.map(function(r){return r.id;});
+var BASIC=ALL.filter(function(it){return !it.dak;});
+var UNLOCK=37;
+var ALT={shi:['si'],chi:['ti'],tsu:['tu'],fu:['hu'],ji:['zi','di'],zu:['du'],wo:['o'],n:['nn','m']};
+var CONF={'さ':'ち き','ち':'さ ら','き':'さ ま','ぬ':'め ね','め':'ぬ あ','ね':'れ わ ぬ','れ':'ね わ','わ':'ね れ','る':'ろ','ろ':'る','は':'ほ け','ほ':'は ま','け':'は','い':'り こ','り':'い','こ':'に い','に':'こ','し':'つ も','つ':'し う','う':'ら つ','ら':'う ち','く':'へ','へ':'く','あ':'お め','お':'あ','ま':'も ほ','も':'ま し','そ':'て','て':'そ','た':'な','な':'た','す':'む','む':'す','の':'め','よ':'ま','が':'か ざ','ざ':'さ だ','だ':'た ざ','ば':'ぱ は','ぱ':'ば は','じ':'し ぢ','ず':'す づ','び':'ぴ ひ','ぴ':'び ひ','ぶ':'ぷ ふ','ぷ':'ぶ ふ','べ':'ぺ へ','ぺ':'べ へ','ぼ':'ぽ ほ','ぽ':'ぼ ほ','ご':'こ ぞ','ぞ':'そ ど','ど':'と ぞ','ぎ':'き','ぐ':'く','げ':'け','ぜ':'せ','で':'て','ぢ':'ち じ','づ':'つ ず'};
+
+var WORDS=[
+ ['すし','寿司 鮨','sushi'],['さかな','魚 肴','peix'],['みず','水','aigua'],['えき','駅','estació'],['やま','山','muntanya'],
+ ['かわ','川 河 皮','riu'],['そら','空','cel'],['はな','花 鼻','flor'],['いぬ','犬','gos'],['ねこ','猫','gat'],
+ ['とり','鳥 取り','ocell'],['うみ','海','mar'],['あめ','雨 飴','pluja'],['ゆき','雪','neu'],['つき','月','lluna'],
+ ['ほし','星','estrella'],['くるま','車','cotxe'],['みせ','店','botiga'],['まち','町 街','ciutat, barri'],['いえ','家','casa'],
+ ['へや','部屋','habitació'],['あし','足 脚','peu, cama'],['くち','口','boca'],['みみ','耳','orella'],['あたま','頭','cap'],
+ ['からだ','体 身体','cos'],['ひと','人','persona'],['ともだち','友達','amic'],['なまえ','名前','nom'],['おかね','お金','diners'],
+ ['さいふ','財布','cartera'],['かさ','傘','paraigua'],['かばん','鞄','bossa, motxilla'],['くすり','薬','medicament'],['ごはん','ご飯 御飯','arròs, àpat'],
+ ['さけ','酒 鮭','sake'],['にく','肉','carn'],['たまご','卵 玉子','ou'],['やさい','野菜','verdura'],['くだもの','果物','fruita'],
+ ['りんご','林檎','poma'],['みかん','蜜柑','mandarina'],['そば','蕎麦 側','soba (fideus)'],['うどん','饂飩','udon (fideus)'],['てんぷら','天ぷら 天麩羅','tempura'],
+ ['おにぎり','お握り','onigiri'],['あさ','朝 麻','matí'],['ひる','昼','migdia'],['よる','夜','nit'],['いま','今 居間','ara'],
+ ['あした','明日','demà'],['きのう','昨日','ahir'],['なつ','夏','estiu'],['ふゆ','冬','hivern'],['はる','春','primavera'],
+ ['あき','秋','tardor'],['あかい','赤い 紅い','vermell'],['あおい','青い 蒼い','blau'],['しろい','白い','blanc'],['くろい','黒い','negre'],
+ ['おおきい','大きい','gran'],['ちいさい','小さい','petit'],['たかい','高い','car, alt'],['やすい','安い','barat'],['おいしい','美味しい 美味い','bo (de gust)'],
+ ['あつい','暑い 熱い 厚い','calent'],['さむい','寒い','fred (temps)'],['はい','はーい','sí'],['いいえ','いえ','no'],['ありがとう','有難う 有り難う','gràcies'],
+ ['すみません','済みません すいません','perdó, disculpi'],['おはよう','お早う','bon dia'],['こんにちは','今日は こんにちわ','hola'],['こんばんは','今晩は こんばんわ','bona nit (salutació)'],['さようなら','さよなら','adéu'],
+ ['ください','下さい','doneu-me, si us plau'],['いくら','幾ら','quant val?'],['どこ','何処','on?'],['なに','何','què?'],['だれ','誰','qui?'],
+ ['いつ','何時','quan?'],['えいご','英語','anglès'],['にほん','日本 にっぽん','Japó'],['ふじさん','富士山','mont Fuji'],['おおさか','大阪','Osaka'],
+ ['なら','奈良','Nara'],['ひろしま','広島','Hiroshima'],['おかわり','お代わり','una altra ració'],['おてあらい','お手洗い','lavabo'],['でぐち','出口','sortida'],
+ ['いりぐち','入口 入り口','entrada'],['きた','北 来た','nord'],['みなみ','南','sud'],['ひがし','東','est'],['にし','西','oest']
+].map(function(w){ return {w:w[0], forms:[w[0]].concat(w[1].split(' ')), m:w[2]}; });
+
+/* ================= Estat ================= */
+var KEY='hiragana-al-dit:v2';
+var S={rows:['a','ka','sa'], types:{rec:true,read:true,listen:true,write:true}, trace:true, font:null, st:{}, words:{}};
+function loadState(){
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(raw){ var p=JSON.parse(raw); if(p && p.rows){ for(var key in p){ if(Object.prototype.hasOwnProperty.call(p,key)) S[key]=p[key]; } return; } }
+    var old=localStorage.getItem('hiragana-al-dit:v1');
+    if(old){
+      var o=JSON.parse(old);
+      if(o && o.rows){ S.rows=o.rows; S.trace=o.trace!==false; var os=o.stats||{}; for(var k in os){ if(BY_K[k]) S.st[k]={rec:os[k]}; } }
+    }
+  }catch(e){}
+}
+loadState();
+if(!S.types || S.types.rec===undefined) S.types={rec:true,read:true,listen:true,write:true};
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
 function $(s){ return document.querySelector(s); }
-function store(k,v){ try{ localStorage.setItem('lab-traç:'+k, v); }catch(e){} }
-function load(k){ try{ return localStorage.getItem('lab-traç:'+k); }catch(e){ return null; } }
+function $$(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function pool(){ return ALL.filter(function(it){ return S.rows.indexOf(it.row)>=0; }); }
+function sk(k,skill){ var s=S.st[k]; return s ? s[skill] : null; }
+function mastered(k,skill){ var s=sk(k,skill); return !!(s && s.streak>=3); }
+function record(k,skill,ok){
+  if(!S.st[k]) S.st[k]={};
+  var s=S.st[k][skill] || {ok:0,ko:0,streak:0,t:0};
+  if(ok){ s.ok++; s.streak++; } else { s.ko++; s.streak=0; }
+  s.t=Date.now(); S.st[k][skill]=s; save();
+}
+function snapshot(k,skill){ var s=sk(k,skill); return s ? JSON.parse(JSON.stringify(s)) : null; }
+function restore(k,skill,snap){ if(!S.st[k]) S.st[k]={}; if(snap) S.st[k][skill]=snap; else delete S.st[k][skill]; }
+function lvl(k){
+  var s=S.st[k]; if(!s) return 'new';
+  var any=false, weak=false;
+  ['rec','write','read','listen'].forEach(function(x){ if(s[x]){ any=true; if(s[x].ko>s[x].ok) weak=true; } });
+  if(!any) return 'new';
+  if(mastered(k,'rec') && mastered(k,'write')) return 'ok';
+  if(weak) return 'weak';
+  return 'learn';
+}
+function unlockedCount(){ return BASIC.filter(function(it){ return mastered(it.k,'rec') && mastered(it.k,'write'); }).length; }
+function wordsUnlocked(){ return unlockedCount()>=UNLOCK; }
+function weight(k,skill){
+  var s=sk(k,skill); if(!s) return 3;
+  var w=1+s.ko*1.4-s.ok*0.35-s.streak*0.4;
+  if(Date.now()-s.t>86400000) w+=0.6;
+  return Math.max(0.25, Math.min(6,w));
+}
+function pickWeighted(list, skill, avoidK){
+  var l=list.length>1 ? list.filter(function(it){ return it.k!==avoidK; }) : list;
+  var tot=0, ws=l.map(function(it){ var w=weight(it.k,skill); tot+=w; return w; });
+  var x=Math.random()*tot;
+  for(var i=0;i<l.length;i++){ x-=ws[i]; if(x<=0) return l[i]; }
+  return l[l.length-1];
+}
+function distractors(item, n, field){
+  var out=[], seen={}; seen[item[field]]=1;
+  function add(it){ if(!it || out.length>=n || seen[it[field]]) return; seen[it[field]]=1; out.push(it); }
+  shuffle((CONF[item.k]||'').split(' ')).slice(0,2).forEach(function(k){ add(BY_K[k]); });
+  shuffle(pool()).forEach(add);
+  shuffle(ALL.filter(function(it){ return it.dak===item.dak; })).forEach(add);
+  shuffle(ALL).forEach(add);
+  return out;
+}
+function romajiOK(it, typed){
+  var t=String(typed||'').toLowerCase().replace(/[^a-z]/g,'');
+  if(!t) return false;
+  var acc=[it.r].concat(ALT[it.r]||[]);
+  return acc.indexOf(t)>=0;
+}
 
-/* ---------- Pestanyes ---------- */
-Array.prototype.forEach.call(document.querySelectorAll('.seg button'), function(b){
-  b.addEventListener('click', function(){
-    var t=b.getAttribute('data-tab');
-    Array.prototype.forEach.call(document.querySelectorAll('.seg button'), function(x){ x.setAttribute('aria-selected', x===b?'true':'false'); });
-    $('#tw').hidden = t!=='w'; $('#tv').hidden = t!=='v';
-    if(t==='w') setupPad();
+/* ================= Veu (TTS) ================= */
+var hasTTS=('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance!=='undefined');
+function jaVoice(){ try{ var v=window.speechSynthesis.getVoices(); for(var i=0;i<v.length;i++){ if(/^ja/i.test(v[i].lang)) return v[i]; } }catch(e){} return null; }
+if(hasTTS){ try{ window.speechSynthesis.getVoices(); }catch(e){} }
+function speak(t, rate){
+  if(!hasTTS) return;
+  try{ var u=new SpeechSynthesisUtterance(t); u.lang='ja-JP'; u.rate=rate||0.75; var v=jaVoice(); if(v) u.voice=v; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }catch(e){}
+}
+
+/* ================= Fonts ================= */
+function applyFont(){
+  document.documentElement.setAttribute('data-font', S.font==='text' ? 'text' : 'std');
+  $('#fontLbl').textContent = S.font==='text' ? 'LLIBRE' : 'ESTÀNDARD';
+}
+function openOnb(){
+  $('#onb').hidden=false;
+  $$('.fchoice').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-font')===S.font ? 'true':'false'); });
+  $('#onbGo').disabled=!S.font;
+}
+$$('.fchoice').forEach(function(b){ b.addEventListener('click', function(){ S.font=b.getAttribute('data-font'); save(); applyFont(); openOnb(); }); });
+$('#onbGo').addEventListener('click', function(){ if(!S.font) return; $('#onb').hidden=true; });
+$('#fontBtn').addEventListener('click', openOnb);
+var fontsReady=(document.fonts && document.fonts.load)
+  ? Promise.all([
+      document.fonts.load('600 190px "Klee One"', ALL.map(function(i){return i.k;}).join('')),
+      document.fonts.load('500 190px "Zen Kaku Gothic New"', ALL.map(function(i){return i.k;}).join(''))
+    ]).then(function(){}, function(){})
+  : Promise.resolve();
+
+/* ================= Traços (KanjiVG) ================= */
+var SVGNS='http://www.w3.org/2000/svg';
+function el(tag, attrs){ var e=document.createElementNS(SVGNS, tag); for(var a in attrs){ if(Object.prototype.hasOwnProperty.call(attrs,a)) e.setAttribute(a, attrs[a]); } return e; }
+var measureSvg=null;
+function pathInfo(d){
+  if(!measureSvg){ measureSvg=el('svg',{width:'0',height:'0'}); measureSvg.style.position='absolute'; measureSvg.style.left='-9999px'; document.body.appendChild(measureSvg); }
+  var p=el('path',{d:d}); measureSvg.appendChild(p);
+  var L=p.getTotalLength(), a=p.getPointAtLength(0), b=p.getPointAtLength(Math.min(6,L));
+  measureSvg.removeChild(p);
+  return {L:L, sx:a.x, sy:a.y, dx:b.x-a.x, dy:b.y-a.y};
+}
+function numberBadge(g, info, n, small){
+  var m=Math.sqrt(info.dx*info.dx+info.dy*info.dy)||1, off=small?6:7;
+  var cx=info.sx-info.dy/m*off-info.dx/m*3, cy=info.sy+info.dx/m*off-info.dy/m*3;
+  cx=Math.max(5,Math.min(104,cx)); cy=Math.max(5,Math.min(104,cy));
+  var gg=el('g',{}); gg.appendChild(el('circle',{cx:cx,cy:cy,r:small?4.2:5,fill:'var(--hot)'}));
+  var t=el('text',{x:cx,y:cy+(small?2:2.3),'text-anchor':'middle','font-size':small?'5.6':'6.5','font-weight':'700',fill:'#FFFFFF','font-family':'system-ui,sans-serif'});
+  t.textContent=n; gg.appendChild(t); g.appendChild(gg); return gg;
+}
+/* Visor animat d'ordre de traços */
+function strokeViewer(host, k, opts){
+  opts=opts||{};
+  var D=KVG[k], n=D.length;
+  host.innerHTML='<div class="sv"><div class="box"><span class="gl gv"></span><span class="gl gh"></span></div><p class="lbl"></p>'+
+    '<div class="ctl"><button data-s="prev" aria-label="Traç anterior">‹</button><button data-s="play" aria-label="Reprodueix">'+(opts.compact?'▶':'▶ Reprodueix')+'</button><button data-s="next" aria-label="Traç següent">›</button></div></div>';
+  var box=host.querySelector('.box'), lbl=host.querySelector('.lbl');
+  var svg=el('svg',{viewBox:'0 0 109 109'});
+  var defs=el('defs',{}); var mid='ar'+Math.random().toString(36).slice(2,7);
+  var mk=el('marker',{id:mid,viewBox:'0 0 10 10',refX:'5',refY:'5',markerWidth:'4',markerHeight:'4',orient:'auto-start-reverse'});
+  mk.appendChild(el('path',{d:'M0,0 L10,5 L0,10 z',fill:'var(--hot)'})); defs.appendChild(mk); svg.appendChild(defs);
+  var bg=el('g',{fill:'none',stroke:'var(--ghost)','stroke-width':'3','stroke-linecap':'round','stroke-linejoin':'round'});
+  var fg=el('g',{fill:'none','stroke-width':'3.4','stroke-linecap':'round','stroke-linejoin':'round'});
+  var nums=el('g',{}); svg.appendChild(bg); svg.appendChild(fg); svg.appendChild(nums); box.appendChild(svg);
+  var P=[], B=[], step=0, timer=null;
+  D.forEach(function(d,i){
+    bg.appendChild(el('path',{d:d}));
+    var p=el('path',{d:d,stroke:'var(--ink)'}); fg.appendChild(p);
+    var info=pathInfo(d); p._L=info.L; p.style.strokeDasharray=info.L; p.style.strokeDashoffset=info.L; P.push(p);
+    var b=numberBadge(nums, info, i+1, false); b.style.opacity=0; B.push(b);
   });
-});
-function fillSelect(sel){
-  sel.innerHTML = ALL.map(function(k){ return '<option value="'+k+'">'+k+'  '+ROMA[k]+(HINT[k]?' ('+HINT[k]+')':'')+'</option>'; }).join('');
-}
-
-/* ---------- Pissarra ---------- */
-var target = load('w') || 'あ';
-var pad=$('#pad'), cv=$('#cv'), ctx=cv.getContext('2d'), size=300, strokes=[], cur=null;
-fillSelect($('#selW'));
-function setTarget(k){
-  target=k; store('w',k); $('#selW').value=k; $('#roW').textContent=ROMA[k]; $('#hintW').textContent=HINT[k]||'';
-  $('#ghost').textContent=k; strokes=[]; redraw(); $('#results').innerHTML='';
-}
-$('#selW').addEventListener('change', function(){ setTarget(this.value); });
-$('#rndW').addEventListener('click', function(){ setTarget(ALL[Math.floor(Math.random()*ALL.length)]); });
-$('#mdl').addEventListener('click', function(){
-  var on=this.getAttribute('aria-pressed')!=='true'; this.setAttribute('aria-pressed', on?'true':'false');
-  this.style.borderColor = on ? 'var(--accent)' : ''; $('#ghost').hidden=!on;
-});
-function ink(){ return getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#18202B'; }
-function setupPad(){
-  var r=pad.getBoundingClientRect(); if(!r.width) return; size=r.width;
-  var dpr=window.devicePixelRatio||1; cv.width=Math.round(size*dpr); cv.height=Math.round(size*dpr);
-  ctx.setTransform(dpr,0,0,dpr,0,0); $('#ghost').style.fontSize=(size*0.8)+'px'; redraw();
-}
-function redraw(){
-  ctx.clearRect(0,0,size,size); ctx.strokeStyle=ink(); ctx.fillStyle=ink();
-  ctx.lineWidth=size*0.042; ctx.lineCap='round'; ctx.lineJoin='round';
-  strokes.forEach(function(st){
-    if(st.length===1){ ctx.beginPath(); ctx.arc(st[0].x*size, st[0].y*size, ctx.lineWidth/2, 0, Math.PI*2); ctx.fill(); return; }
-    ctx.beginPath(); ctx.moveTo(st[0].x*size, st[0].y*size);
-    for(var i=1;i<st.length-1;i++){ ctx.quadraticCurveTo(st[i].x*size, st[i].y*size, (st[i].x+st[i+1].x)/2*size, (st[i].y+st[i+1].y)/2*size); }
-    var l=st[st.length-1]; ctx.lineTo(l.x*size, l.y*size); ctx.stroke();
+  function show(s, anim){
+    step=s;
+    P.forEach(function(p,i){
+      p.style.transition='none'; p.removeAttribute('marker-end');
+      if(i<s-1){ p.style.strokeDashoffset=0; p.setAttribute('stroke','var(--ink)'); }
+      else if(i===s-1){
+        p.setAttribute('stroke','var(--hot)'); p.setAttribute('marker-end','url(#'+mid+')');
+        if(anim){ p.style.strokeDashoffset=p._L; p.getBoundingClientRect(); p.style.transition='stroke-dashoffset '+(p._L/55)+'s linear'; }
+        p.style.strokeDashoffset=0;
+      } else { p.style.strokeDashoffset=p._L; p.setAttribute('stroke','var(--ink)'); }
+      B[i].style.opacity = i<s ? 1 : 0;
+    });
+    lbl.textContent = s ? ('Traç '+s+' de '+n) : (n+' traç'+(n===1?'':'os'));
+  }
+  function play(){
+    clearTimeout(timer); var i=0;
+    (function go(){ if(!host.isConnected) return; i++; show(i,true); if(i<n) timer=setTimeout(go, P[i-1]._L/55*1000+450); })();
+  }
+  host.querySelector('.ctl').addEventListener('click', function(e){
+    var b=e.target.closest('[data-s]'); if(!b) return; clearTimeout(timer);
+    var a=b.getAttribute('data-s');
+    if(a==='play') play(); else if(a==='next') show(Math.min(n,step+1),true); else show(Math.max(1,step-1),false);
   });
+  show(0,false);
+  if(opts.autoplay) setTimeout(play, 250);
 }
-function pt(e){ var r=cv.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width, y:(e.clientY-r.top)/r.height}; }
-cv.addEventListener('pointerdown', function(e){ e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(err){} cur=[pt(e)]; strokes.push(cur); redraw(); });
-cv.addEventListener('pointermove', function(e){
-  if(!cur) return; e.preventDefault();
-  var evs=(e.getCoalescedEvents && e.getCoalescedEvents()) || []; if(!evs.length) evs=[e];
-  for(var i=0;i<evs.length;i++){ var p=pt(evs[i]), l=cur[cur.length-1]; if(Math.abs(p.x-l.x)+Math.abs(p.y-l.y)>0.004) cur.push(p); }
-  redraw();
-});
-cv.addEventListener('pointerup', function(){ cur=null; });
-cv.addEventListener('pointercancel', function(){ cur=null; });
-cv.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
-$('#undo').addEventListener('click', function(){ strokes.pop(); redraw(); });
-$('#clr').addEventListener('click', function(){ strokes=[]; redraw(); $('#results').innerHTML=''; });
-window.addEventListener('resize', setupPad);
 
-/* ---------- Raster i distància ---------- */
-var N=64, MARG=7;
-function mk(w,h){ var c=document.createElement('canvas'); c.width=w; c.height=h; return c; }
-var SMALL=mk(N,N), SX=SMALL.getContext('2d');
+/* ================= Reconeixement d'escriptura ================= */
+var N=64, MARG=7, NP=24;
+function mkc(w,h){ var c=document.createElement('canvas'); c.width=w; c.height=h; return c; }
+var SMALL=mkc(N,N), SX=SMALL.getContext('2d');
 function readMask(){ var d=SX.getImageData(0,0,N,N).data, m=new Uint8Array(N*N); for(var i=0;i<N*N;i++) m[i]=d[i*4+3]>90?1:0; return m; }
 function distT(m){
   var INF=1e6, d=new Float32Array(N*N), x,y,i,v;
@@ -227,7 +573,7 @@ function distT(m){
   return d;
 }
 function chamfer(a,dtB){ var s=0,n=0; for(var i=0;i<a.length;i++){ if(a[i]){ s+=Math.min(dtB[i],18); n++; } } return n? s/n : 18; }
-function bigToMask(big, B){
+function bigToMask(big,B){
   var bx=big.getContext('2d'), d=bx.getImageData(0,0,B,B).data, x0=B,y0=B,x1=-1,y1=-1;
   for(var y=0;y<B;y++) for(var x=0;x<B;x++){ if(d[(y*B+x)*4+3]>100){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
   if(x1<0) return null;
@@ -248,38 +594,32 @@ function strokesMask(sts){
   });
   var m=readMask(); return {m:m, dt:distT(m)};
 }
-
-/* ---------- Plantilles ---------- */
 var TPL=null, REF=null;
-var fontReady = (document.fonts && document.fonts.load)
-  ? document.fonts.load('600 190px "Klee One"', ALL.join('')).then(function(){}, function(){})
-  : Promise.resolve();
-function glyphTpl(k, font){
-  var B=256, big=mk(B,B), bx=big.getContext('2d');
+function glyphTpl(k,font){
+  var B=256, big=mkc(B,B), bx=big.getContext('2d');
   bx.fillStyle='#000'; bx.textAlign='center'; bx.textBaseline='middle'; bx.font=font; bx.fillText(k,B/2,B/2+8);
   return bigToMask(big,B);
 }
 function kvgTpl(k){
-  var B=256, big=mk(B,B), bx=big.getContext('2d'), s=B/109;
+  var B=256, big=mkc(B,B), bx=big.getContext('2d'), s=B/109;
   bx.setTransform(s,0,0,s,0,0); bx.strokeStyle='#000'; bx.lineWidth=7; bx.lineCap='round'; bx.lineJoin='round';
   KVG[k].forEach(function(d){ bx.stroke(new Path2D(d)); });
   return bigToMask(big,B);
 }
-function samplePath(d, n){
-  var svg=document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('width','0'); svg.setAttribute('height','0'); svg.style.position='absolute';
-  var p=document.createElementNS('http://www.w3.org/2000/svg','path'); p.setAttribute('d',d); svg.appendChild(p); document.body.appendChild(svg);
+function samplePath(d,n){
+  if(!measureSvg){ pathInfo('M0,0 L1,1'); }
+  var p=el('path',{d:d}); measureSvg.appendChild(p);
   var L=p.getTotalLength(), out=[];
   for(var i=0;i<n;i++){ var q=p.getPointAtLength(L*i/(n-1)); out.push({x:q.x,y:q.y}); }
-  document.body.removeChild(svg); return out;
+  measureSvg.removeChild(p); return out;
 }
-var NP=24;
 function normStrokes(sts){
   var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
   sts.forEach(function(st){ st.forEach(function(p){ if(p.x<x0)x0=p.x; if(p.x>x1)x1=p.x; if(p.y<y0)y0=p.y; if(p.y>y1)y1=p.y; }); });
   var w=Math.max(x1-x0,1e-6), h=Math.max(y1-y0,1e-6), s=1/Math.max(w,h), ox=(1-w*s)/2, oy=(1-h*s)/2;
   return sts.map(function(st){ return st.map(function(p){ return {x:ox+(p.x-x0)*s, y:oy+(p.y-y0)*s}; }); });
 }
-function resample(st, n){
+function resample(st,n){
   if(st.length===1){ var r=[]; for(var i=0;i<n;i++) r.push({x:st[0].x,y:st[0].y}); return r; }
   var L=0, seg=[0]; for(var j=1;j<st.length;j++){ L+=Math.hypot(st[j].x-st[j-1].x, st[j].y-st[j-1].y); seg.push(L); }
   var out=[], k=1;
@@ -291,63 +631,44 @@ function resample(st, n){
   }
   return out;
 }
-function build(){
+function buildTemplates(){
   if(TPL) return;
   TPL={}; REF={};
-  var fonts=['600 190px "Klee One","Hiragino Mincho ProN",serif','400 190px "Hiragino Sans","Hiragino Kaku Gothic ProN","Zen Kaku Gothic New",sans-serif'];
-  ALL.forEach(function(k){
+  var fonts=['600 190px "Klee One","Hiragino Mincho ProN",serif','500 190px "Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif'];
+  ALL.forEach(function(it){
+    var k=it.k;
     TPL[k]=[glyphTpl(k,fonts[0]), glyphTpl(k,fonts[1]), kvgTpl(k)].filter(Boolean);
-    REF[k]=normStrokes(KVG[k].map(function(d){ return samplePath(d, NP); }));
+    REF[k]=normStrokes(KVG[k].map(function(d){ return samplePath(d,NP); }));
   });
 }
-
-/* ---------- Mètodes ---------- */
-function rankOf(list, k){ for(var i=0;i<list.length;i++){ if(list[i].k===k) return i; } return -1; }
-function methodA(){
-  var u=strokesMask(strokes), ns=strokes.length;
-  var res=ALL.map(function(k){
-    var t=TPL[k][0], sc=(chamfer(u.m,t.dt)+chamfer(t.m,u.dt))/2;
-    sc*=1+0.07*Math.min(3,Math.abs(ns-KVG[k].length));
-    return {k:k, sc:sc};
-  }).sort(function(a,b){ return a.sc-b.sc; });
-  var r=rankOf(res,target), ok=r===0 || (r>0 && r<=2 && res[r].sc/res[0].sc<1.08);
-  return {ok:ok, mid:ok && r!==0, top:res.slice(0,3), why: r===0 ? 'Primera opció del reconeixedor.' : ok ? 'Entre les primeres i molt a prop.' : 'Hi veu més semblants altres kana (posició '+(r+1)+').'};
-}
-function transform(sts, ang, shear, sx){
+function rankOf(list,k){ for(var i=0;i<list.length;i++){ if(list[i].k===k) return i; } return -1; }
+function transformSt(sts, ang, shear, sx){
   var cx=0,cy=0,n=0; sts.forEach(function(st){ st.forEach(function(p){ cx+=p.x; cy+=p.y; n++; }); }); cx/=n; cy/=n;
   var c=Math.cos(ang), s=Math.sin(ang);
-  return sts.map(function(st){ return st.map(function(p){
-    var x=(p.x-cx)*sx, y=p.y-cy; x+=shear*y;
-    return {x:cx+x*c-y*s, y:cy+x*s+y*c};
-  }); });
+  return sts.map(function(st){ return st.map(function(p){ var x=(p.x-cx)*sx, y=p.y-cy; x+=shear*y; return {x:cx+x*c-y*s, y:cy+x*s+y*c}; }); });
 }
-function methodB(){
+function shapeRank(sts){
   var vars=[];
   [-12,-6,0,6,12].forEach(function(a){ [-0.2,0,0.2].forEach(function(sh){ [0.85,1,1.18].forEach(function(sx){
     if(Math.abs(a)===12 && sh!==0) return;
-    vars.push(strokesMask(transform(strokes, a*Math.PI/180, sh, sx)));
+    vars.push(strokesMask(transformSt(sts, a*Math.PI/180, sh, sx)));
   }); }); });
-  var res=ALL.map(function(k){
+  return ALL.map(function(it){
     var best=1e9;
-    TPL[k].forEach(function(t){ vars.forEach(function(u){ var sc=(chamfer(u.m,t.dt)+chamfer(t.m,u.dt))/2; if(sc<best) best=sc; }); });
-    return {k:k, sc:best};
+    TPL[it.k].forEach(function(t){ vars.forEach(function(u){ var sc=(chamfer(u.m,t.dt)+chamfer(t.m,u.dt))/2; if(sc<best) best=sc; }); });
+    return {k:it.k, sc:best};
   }).sort(function(a,b){ return a.sc-b.sc; });
-  var r=rankOf(res,target), ok=r===0 || (r>0 && r<=2 && res[r].sc/res[0].sc<1.12);
-  return {all:res, ok:ok, mid:ok && r!==0, top:res.slice(0,3), why: r===0 ? 'Reconegut perdonant inclinació i proporcions.' : ok ? 'Acceptat per poc: la forma s\'assembla a un altre kana.' : 'Fins i tot corregint inclinació i proporcions, s\'assembla més a altres kana.'};
 }
 function sdist(a,b){ var s=0; for(var i=0;i<a.length;i++) s+=Math.hypot(a[i].x-b[i].x, a[i].y-b[i].y); return s/a.length; }
 var PERMS={};
 function perms(n){
   if(PERMS[n]) return PERMS[n];
-  var out=[];
-  (function rec(pre, rest){
-    if(!rest.length){ out.push(pre); return; }
-    for(var i=0;i<rest.length;i++) rec(pre.concat([rest[i]]), rest.slice(0,i).concat(rest.slice(i+1)));
-  })([], (function(){ var a=[]; for(var i=0;i<n;i++) a.push(i); return a; })());
+  var out=[], base=[]; for(var i=0;i<n;i++) base.push(i);
+  (function rec(pre,rest){ if(!rest.length){ out.push(pre); return; } for(var i=0;i<rest.length;i++) rec(pre.concat([rest[i]]), rest.slice(0,i).concat(rest.slice(i+1))); })([], base);
   PERMS[n]=out; return out;
 }
 function plen(st){ var L=0; for(var i=1;i<st.length;i++) L+=Math.hypot(st[i].x-st[i-1].x, st[i].y-st[i-1].y); return L; }
-function matchStrokes(U, R){
+function matchStrokes(U,R){
   var n=U.length, M=[], F=[], V=[];
   for(var i=0;i<n;i++){
     M.push([]); F.push([]); V.push([]);
@@ -359,174 +680,517 @@ function matchStrokes(U, R){
   var idc=0; for(var i2=0;i2<n;i2++) idc+=M[i2][i2];
   return {sc:best/n, perm:bp, idc:idc/n, F:F, V:V};
 }
-function methodC(){
-  var U=normStrokes(strokes).map(function(st){ return resample(st, NP); }), n=U.length, need=KVG[target].length;
-  var mine=null;
-  var res=ALL.filter(function(k){ return KVG[k].length===n; }).map(function(k){
-    var m=matchStrokes(U, REF[k]); if(k===target) mine=m; return {k:k, sc:m.sc};
+function strokeRank(sts, target){
+  var U=normStrokes(sts).map(function(st){ return resample(st,NP); }), n=U.length, mine=null;
+  var res=ALL.filter(function(it){ return it.st===n; }).map(function(it){
+    var m=matchStrokes(U, REF[it.k]); if(it.k===target) mine=m; return {k:it.k, sc:m.sc};
   }).sort(function(a,b){ return a.sc-b.sc; });
-  if(n!==need){
-    return {all:res, notes:[], ok:false, top:res.slice(0,3), why:'Has fet '+n+' traç'+(n===1?'':'os')+' i '+target+' en té '+need+'. Aquest mètode no el pot comparar.'};
+  var notes=[];
+  if(mine){
+    var p=mine.perm, moved=false; for(var i=0;i<n;i++) if(p[i]!==i) moved=true;
+    if(moved && mine.idc > mine.sc*1.2+0.01){
+      notes.push('ordre dels traços: has fet '+p.map(function(x){return x+1;}).join('-')+' i el correcte és '+p.map(function(_,i){return i+1;}).join('-'));
+    }
+    var R=REF[target];
+    for(var i2=0;i2<n;i2++){ var j=p[i2]; if(plen(R[j])>=0.15 && mine.V[i2][j] < mine.F[i2][j]*0.6) notes.push('el traç '+(j+1)+' va en sentit contrari'); }
   }
-  var notes=[], p=mine.perm, moved=false;
-  for(var i=0;i<n;i++) if(p[i]!==i) moved=true;
-  if(moved && mine.idc > mine.sc*1.2 + 0.01){
-    notes.push('ordre dels traços (has fet '+p.map(function(x){return x+1;}).join('-')+', el correcte és '+p.map(function(_,i){return i+1;}).join('-')+')');
-  }
-  var R=REF[target];
-  for(var i2=0;i2<n;i2++){
-    var j=p[i2];
-    if(plen(R[j])>=0.15 && mine.V[i2][j] < mine.F[i2][j]*0.6) notes.push('traç '+(j+1)+' al revés');
-  }
-  var r=rankOf(res,target), tsc=res[r].sc;
-  var ok=r===0 || (r<=2 && tsc<0.11);
-  var why = !ok ? 'Els traços s\'assemblen més a '+res[0].k+' (posició '+(r+1)+').' :
-            notes.length ? 'Traços reconeguts, però: '+notes.join(', ')+'.' : 'Nombre, ordre i direcció correctes.';
-  return {all:res, notes:notes, ok:ok, mid:ok && notes.length>0, top:res.slice(0,3), why:why};
+  return {all:res, notes:notes};
 }
-
 var VARC={'き':[3,4],'さ':[2,3],'そ':[1,2],'り':[1,2],'ぎ':[5,6],'ざ':[4,5],'ぞ':[3,4]};
 function counts(k){ return VARC[k] || [KVG[k].length]; }
-function methodD(b, c){
-  var n=strokes.length, need=counts(target);
+function judge(sts, target){
+  buildTemplates();
+  var n=sts.length, need=counts(target);
   if(need.indexOf(n)<0){
-    return {ok:false, top:b.all.slice(0,3), why:target+' té '+need.join(' o ')+' traços i n\'has fet '+n+'. Compta com a error perquè el nombre de traços forma part del que aprens.'};
+    return {ok:false, strokes:n, top:[], why:target+' té '+need.join(' o ')+' traços i n\'has fet '+n+'.'};
   }
-  var cand=b.all.filter(function(x){ return counts(x.k).indexOf(n)>=0; });
-  var bi=rankOf(cand,target), bOk=bi===0, bNear=bi>0 && bi<=2 && cand[bi].sc/cand[0].sc<1.15;
-  var cUse = n===KVG[target].length && c.all.length>0, cTop=null, cMine=null, cStrong=false, cVeto=false;
-  if(cUse){
-    cTop=c.all[0]; c.all.forEach(function(x){ if(x.k===target) cMine=x; });
-    cStrong = cTop.k===target && (c.all.length<2 || c.all[1].sc/cTop.sc>1.2);
-    cVeto = cTop.k!==target && cMine && cMine.sc/cTop.sc>1.25;
+  var b=shapeRank(sts);
+  var cand=b.filter(function(x){ return counts(x.k).indexOf(n)>=0; });
+  var bi=rankOf(cand,target), bOk=bi===0;
+  var bNear=bi>0 && bi<=3 && cand[bi].sc/cand[0].sc<1.3;
+  var c={all:[], notes:[]}, cStrong=false, cVeto=false, cTop=null;
+  if(n===KVG[target].length){
+    c=strokeRank(sts, target);
+    if(c.all.length){
+      cTop=c.all[0]; var cMine=null; c.all.forEach(function(x){ if(x.k===target) cMine=x; });
+      cStrong = cTop.k===target && (c.all.length<2 || c.all[1].sc/cTop.sc>1.2);
+      cVeto = cTop.k!==target && cMine && cMine.sc/cTop.sc>1.25;
+    }
   }
-  var adv=(c.notes||[]);
-  function okRes(why){ return {ok:true, mid:adv.length>0, top:cand.slice(0,3), why: adv.length ? why+' Consell: '+adv.join(', ')+'.' : why}; }
-  if(bOk && !cVeto) return okRes('Correcte.');
-  if(bOk && cVeto) return {ok:false, top:c.all.slice(0,3), why:'La silueta s\'hi assembla, però els traços no corresponen als de '+target+'.'};
-  if(bNear && cStrong) return okRes('Correcte: la silueta és ambigua, però els traços ho confirmen.');
-  return {ok:false, top:cand.slice(0,3), why:'Amb '+n+' traços, la forma s\'assembla més a '+cand[0].k+'.'};
+  var adv=c.notes;
+  if(bOk && !cVeto) return {ok:true, strokes:n, top:cand.slice(0,3), advice:adv, why:'Correcte'};
+  if(bOk && cVeto) return {ok:false, strokes:n, top:c.all.slice(0,3), why:'La silueta s\'hi assembla, però els traços no són els de '+target+'.'};
+  if(bNear && cStrong) return {ok:true, strokes:n, top:cand.slice(0,3), advice:adv, why:'Correcte'};
+  return {ok:false, strokes:n, top:cand.slice(0,3), why:'La forma s\'assembla més a '+cand[0].k+'.'};
 }
-window.__labTest=function(k, sts){ build(); target=k; strokes=sts; var bb=methodB(), cc=methodC(); return {b:bb.all.slice(0,3), c:cc.all.slice(0,3), cn:cc.notes, d:methodD(bb,cc)}; };
-function card(title, sub, r){
-  var cls = r.ok ? (r.mid?'mid':'ok') : (r.mid?'mid':'ko');
-  var sym = r.ok ? (r.mid?'≈':'✓') : (r.mid?'!':'✗');
-  var c = r.top.map(function(t){ return '<b class="'+(t.k===target?'hit':'')+'">'+t.k+'</b>'; }).join('');
-  return '<div class="res '+cls+'"><div class="badge">'+sym+'</div><h3>'+title+'<small>'+sub+'</small></h3><p class="why">'+r.why+'</p><div class="cands">Hi veu:'+(c||' cap')+'</div></div>';
+window.__hadTest=function(k, sts){ return judge(sts,k); };
+
+/* ================= Pissarra ================= */
+function ghostSvg(k, numbered){
+  var svg=el('svg',{viewBox:'0 0 109 109','class':'ghost'});
+  var g=el('g',{fill:'none',stroke:'var(--ghost)','stroke-width':'6','stroke-linecap':'round','stroke-linejoin':'round'});
+  KVG[k].forEach(function(d){ g.appendChild(el('path',{d:d})); });
+  svg.appendChild(g);
+  if(numbered){ var ng=el('g',{}); KVG[k].forEach(function(d,i){ numberBadge(ng, pathInfo(d), i+1, true); }); svg.appendChild(ng); }
+  return svg;
 }
-$('#eval').addEventListener('click', function(){
-  if(!strokes.length){ $('#results').innerHTML='<p class="why" style="text-align:center;color:var(--bad)">Escriu el kana abans d\'avaluar.</p>'; return; }
-  var b=this; b.disabled=true; b.textContent='Avaluant…';
-  fontReady.then(function(){
-    setTimeout(function(){
-      build();
-      var a=methodA(), bb=methodB(), c=methodC(), dd=methodD(bb,c);
-      $('#results').innerHTML = card('D · Combinat','proposta',dd)+card('A · Actual','forma estricta',a)+card('B · Forma flexible','perdona inclinació',bb)+card('C · Traços','ordre i direcció',c);
-      b.disabled=false; b.textContent='Avalua';
-    }, 30);
+function mountWriter(host, item, opts){
+  host.innerHTML='<div class="pad"><span class="gl gv"></span><span class="gl gh"></span><canvas aria-label="Zona per escriure amb el dit"></canvas></div>'+
+    '<div class="wbar"><button class="ghostbtn" data-a="undo">Desfés</button><button class="ghostbtn" data-a="clear">Esborra</button><button class="primary" data-a="check">Comprova</button></div>'+
+    '<div class="wres" hidden></div>';
+  var pad=host.querySelector('.pad'), cv=host.querySelector('canvas'), wres=host.querySelector('.wres'), wbar=host.querySelector('.wbar');
+  var ghost=null;
+  function setGhost(show, numbered){ if(ghost){ ghost.remove(); ghost=null; } if(show){ ghost=ghostSvg(item.k, numbered); pad.insertBefore(ghost, cv); } }
+  setGhost(opts.trace, true);
+  var ctx=cv.getContext('2d'), size=300, strokes=[], cur=null, locked=false, finalOk=false, snap=null;
+  function ink(){ return getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#18202B'; }
+  function setup(){
+    var r=pad.getBoundingClientRect(); size=r.width||300;
+    var dpr=window.devicePixelRatio||1; cv.width=Math.round(size*dpr); cv.height=Math.round(size*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); redraw();
+  }
+  function redraw(){
+    ctx.clearRect(0,0,size,size); ctx.strokeStyle=ink(); ctx.fillStyle=ink();
+    ctx.lineWidth=size*0.042; ctx.lineCap='round'; ctx.lineJoin='round';
+    strokes.forEach(function(st){
+      if(st.length===1){ ctx.beginPath(); ctx.arc(st[0].x*size, st[0].y*size, ctx.lineWidth/2, 0, Math.PI*2); ctx.fill(); return; }
+      ctx.beginPath(); ctx.moveTo(st[0].x*size, st[0].y*size);
+      for(var i=1;i<st.length-1;i++){ ctx.quadraticCurveTo(st[i].x*size, st[i].y*size, (st[i].x+st[i+1].x)/2*size, (st[i].y+st[i+1].y)/2*size); }
+      var l=st[st.length-1]; ctx.lineTo(l.x*size, l.y*size); ctx.stroke();
+    });
+  }
+  function pt(e){ var r=cv.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width, y:(e.clientY-r.top)/r.height}; }
+  cv.addEventListener('pointerdown', function(e){ if(locked) return; e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(err){} cur=[pt(e)]; strokes.push(cur); redraw(); });
+  cv.addEventListener('pointermove', function(e){
+    if(!cur) return; e.preventDefault();
+    var evs=(e.getCoalescedEvents && e.getCoalescedEvents()) || []; if(!evs.length) evs=[e];
+    for(var i=0;i<evs.length;i++){ var p=pt(evs[i]), l=cur[cur.length-1]; if(Math.abs(p.x-l.x)+Math.abs(p.y-l.y)>0.004) cur.push(p); }
+    redraw();
   });
+  function end(){ cur=null; }
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  cv.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
+
+  function showResult(r){
+    var cls=r.ok ? (r.advice && r.advice.length ? 'mid':'ok') : 'ko';
+    var head=r.ok ? 'Correcte' : 'No acaba de ser-hi';
+    var cands=r.top.map(function(c){ return '<b class="'+(c.k===item.k?'hit':'')+'">'+c.k+'</b>'; }).join('');
+    wres.innerHTML='<p class="verdict '+cls+'">'+head+'</p>'+
+      (!r.ok ? '<p class="errline">'+r.why+'</p>' : '')+
+      (r.ok && r.advice && r.advice.length ? '<div class="advice">Consell: '+r.advice.join('; ')+'.</div>' : '')+
+      '<div class="wline"><span>Traços: '+r.strokes+' · en té '+item.st+'</span><button class="linkish" data-a="order">Mostra l\'ordre</button></div>'+
+      (cands ? '<div class="cands">Hi veig:'+cands+'</div>' : '')+
+      '<div class="orderbox" hidden></div>'+
+      '<button class="primary" data-a="next">Següent</button>'+
+      (r.ok ? '' : '<button class="linkish" data-a="override">El meu traç era correcte</button>');
+    wres.hidden=false;
+  }
+  host.addEventListener('click', function(e){
+    var b=e.target.closest('[data-a]'); if(!b || !host.contains(b)) return;
+    var a=b.getAttribute('data-a');
+    if(a==='undo' && !locked){ strokes.pop(); redraw(); }
+    else if(a==='clear' && !locked){ strokes=[]; redraw(); }
+    else if(a==='check' && !locked){
+      if(!strokes.length){ return; }
+      b.disabled=true; b.textContent='…';
+      fontsReady.then(function(){ setTimeout(function(){
+        var r=judge(strokes, item.k);
+        locked=true; finalOk=r.ok; snap=snapshot(item.k,'write'); record(item.k,'write',r.ok);
+        setGhost(true, true); wbar.hidden=true; showResult(r);
+        if(opts.onJudged) opts.onJudged(r.ok);
+      }, 20); });
+    }
+    else if(a==='order'){ var ob=wres.querySelector('.orderbox'); if(ob.hidden){ ob.hidden=false; strokeViewer(ob, item.k, {autoplay:true}); } else ob.hidden=true; }
+    else if(a==='override'){
+      restore(item.k,'write',snap); record(item.k,'write',true); finalOk=true;
+      b.remove(); var v=wres.querySelector('.verdict'); v.className='verdict ok'; v.textContent='Comptat com a correcte';
+      var er=wres.querySelector('.errline'); if(er) er.remove();
+    }
+    else if(a==='next'){ if(opts.onNext) opts.onNext(finalOk); }
+  });
+  setup();
+  var onR=function(){ if(!host.isConnected){ window.removeEventListener('resize',onR); return; } setup(); };
+  window.addEventListener('resize', onR);
+  return { setTrace:function(on){ if(!locked) setGhost(on,true); } };
+}
+
+/* ================= Taula ================= */
+function renderChart(){
+  var h='<div class="grid"><span></span>'+['a','i','u','e','o'].map(function(v){ return '<span class="colhead">'+v+'</span>'; }).join('');
+  ROWS.forEach(function(row,ri){
+    if(ri===11) h+='</div><p class="eyebrow">Amb dakuten ゛ i handakuten ゜</p><div class="grid">';
+    var on=S.rows.indexOf(row.id)>=0;
+    h+='<button class="rowtog kg" data-row="'+row.id+'" aria-pressed="'+on+'" aria-label="Fila '+row.head+'">'+row.head+'<small>行</small></button>';
+    row.cells.forEach(function(it){
+      if(!it){ h+='<span class="cell empty"></span>'; return; }
+      h+='<button class="cell'+(on?'':' off')+'" data-k="'+it.k+'"><i class="dot lv-'+lvl(it.k)+'"></i><span class="k kg">'+it.k+'</span><span class="ro">'+it.r+'</span></button>';
+    });
+  });
+  h+='</div>';
+  $('#chart').innerHTML=h;
+  var same=function(a,b){ return a.length===b.length && a.every(function(x){ return b.indexOf(x)>=0; }); };
+  var q={base:same(S.rows,BASE_IDS), all:same(S.rows,ALL_IDS), none:S.rows.length===0};
+  $$('#quick .chip').forEach(function(c){ c.setAttribute('aria-pressed', q[c.getAttribute('data-q')]?'true':'false'); });
+  renderSub();
+}
+function renderSub(){
+  var p=pool(), dom=ALL.filter(function(it){ return lvl(it.k)==='ok'; }).length, u=unlockedCount();
+  $('#sub').textContent=p.length+' kana a la pràctica · '+dom+' de 71 dominats';
+  var ub=$('#unlockBar');
+  if(u>=UNLOCK){ ub.innerHTML='<span>語 <b>Paraules desbloquejat</b></span><span class="muted" style="margin-left:auto">'+u+'/46 bàsics</span>'; }
+  else ub.innerHTML='<span>🔒 Paraules</span><span class="meter"><i style="width:'+Math.round(u/UNLOCK*100)+'%"></i></span><b>'+u+'/'+UNLOCK+'</b>';
+  $('#tabLock').hidden=u>=UNLOCK;
+}
+$('#chart').addEventListener('click', function(e){
+  var r=e.target.closest('[data-row]');
+  if(r){ var id=r.getAttribute('data-row'), i=S.rows.indexOf(id); if(i>=0) S.rows.splice(i,1); else S.rows.push(id); save(); renderChart(); return; }
+  var c=e.target.closest('[data-k]'); if(c) openSheet(BY_K[c.getAttribute('data-k')]);
+});
+$('#quick').addEventListener('click', function(e){
+  var c=e.target.closest('[data-q]'); if(!c) return;
+  var q=c.getAttribute('data-q'); S.rows = q==='base' ? BASE_IDS.slice() : q==='all' ? ALL_IDS.slice() : []; save(); renderChart();
+});
+var resetBtn=$('#reset'), armTimer=null;
+resetBtn.addEventListener('click', function(){
+  if(resetBtn.classList.contains('armed')){
+    S.st={}; S.words={}; save(); renderChart(); resetBtn.classList.remove('armed'); resetBtn.textContent='Progrés esborrat';
+    clearTimeout(armTimer); armTimer=setTimeout(function(){ resetBtn.textContent='Esborra el progrés'; }, 2000);
+  } else {
+    resetBtn.classList.add('armed'); resetBtn.textContent='Toca de nou per esborrar-ho tot';
+    clearTimeout(armTimer); armTimer=setTimeout(function(){ resetBtn.classList.remove('armed'); resetBtn.textContent='Esborra el progrés'; }, 3500);
+  }
 });
 
-/* ---------- Pronunciació ---------- */
-var HOMO = {
- 'あ':'亜 阿 ああ あっ','い':'胃 井 意 位 いい','う':'鵜 卯 うう','え':'絵 江 柄 餌 ええ','お':'尾 緒 御 おお',
- 'か':'蚊 課 科 可 化 家','き':'木 気 機 黄 期 器','く':'九 区 句 苦 9','け':'毛 け','こ':'子 個 小 湖 故',
- 'さ':'差 さあ','し':'四 市 詩 死 氏 師 史 4','す':'巣 酢 須','せ':'背 瀬','そ':'祖 素 そう',
- 'た':'田 他 多','ち':'血 地 知 千','つ':'津','て':'手','と':'戸 都 斗',
- 'な':'名 菜 奈','に':'二 荷 似 煮 2','ぬ':'ぬう','ね':'根 値 音 寝','の':'野 之 乃',
- 'は':'歯 葉 刃 派 羽','ひ':'日 火 比 非 灯','ふ':'府 不 負 譜','へ':'屁 辺','ほ':'帆 穂 歩 保',
- 'ま':'間 真 魔','み':'実 身 三 見','む':'無 六','め':'目 芽 女','も':'藻 喪',
- 'や':'矢 屋 夜 八','ゆ':'湯 油','よ':'世 夜 代 四 4',
- 'ら':'等 羅','り':'利 理 里','る':'留 流','れ':'例 礼 零','ろ':'炉 呂 路',
- 'わ':'輪 和','を':'お 尾 緒 おお','ん':'うん んん',
- 'が':'我 蛾 画','ぎ':'技 義','ぐ':'具','げ':'下 外','ご':'五 後 語 碁 5',
- 'ざ':'座','じ':'字 時 事 地 ぢ','ず':'図 頭 づ','ぜ':'是','ぞ':'ぞう',
- 'だ':'駄','ぢ':'じ 字 時 事 地','づ':'ず 図 頭','で':'出','ど':'度 土',
- 'ば':'場 馬','び':'美','ぶ':'部 分','べ':'べえ','ぼ':'母 簿',
- 'ぱ':'ぱあ','ぴ':'ぴい','ぷ':'ぷう','ぺ':'ぺえ','ぽ':'ぽお'
-};
-function kata2hira(s){ return s.replace(/[ァ-ヶ]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-0x60); }); }
-function norm(s){ return kata2hira(String(s||'')).replace(/[\s、。，．,.!！?？ー〜~]/g,'').toLowerCase(); }
-function laxMatch(text, k){
-  var t=norm(text); if(!t) return false;
-  if(t.indexOf(k)>=0) return true;
-  var ro=ROMA[k];
-  if(t===ro || t===ro+ro || t.replace(/[^a-z]/g,'')===ro) return true;
-  var hs=(HOMO[k]||'').split(' ');
-  for(var i=0;i<hs.length;i++){ var h=norm(hs[i]); if(h && (t===h || t===h+h || t.indexOf(h)===0 && t.length<=h.length*2)) return true; }
-  return false;
+/* ================= Fitxa ================= */
+function skillLine(k, skill, label){
+  var s=sk(k,skill), cls='lv-new', txt='sense practicar';
+  if(s){ if(s.streak>=3){ cls='lv-ok'; txt='dominat'; } else if(s.ko>s.ok){ cls='lv-weak'; txt='costa'; } else { cls='lv-learn'; txt='aprenent'; } txt+=' · '+s.ok+' ✓ '+s.ko+' ✗'; }
+  return '<span><i class="dot '+cls+'"></i>'+label+': '+txt+'</span>';
 }
-var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-var vK = load('v') || 'か', recog=null, listening=false, LOG=[];
-fillSelect($('#selV'));
-function setV(k){ vK=k; store('v',k); $('#selV').value=k; $('#kV').textContent=k; $('#heard').hidden=true; $('#st').textContent='Toca Grava, digues el kana i espera que s\'aturi sol.'; }
-$('#selV').addEventListener('change', function(){ setV(this.value); });
-$('#rndV').addEventListener('click', function(){ setV(ALL[Math.floor(Math.random()*ALL.length)]); });
-if(!SR){ $('#noSR').hidden=false; $('#rec').disabled=true; $('#rec').style.opacity=.4; }
-function stopUI(){ listening=false; $('#rec').classList.remove('on'); $('#rec').textContent='● Grava'; }
-var phase='idle', heardSet=[], hardT=null, sess=0, entry=null, trace=[], t0=0;
-var MODE = load('mode') || 'A';
-function tr(ev){ trace.push(ev+'@'+(Date.now()-t0)); }
-function addHeard(t){ t=String(t||'').trim(); if(t && heardSet.indexOf(t)<0) heardSet.push(t); }
-function showVerdict(){
-  if(!heardSet.length){ $('#heard').hidden=true; $('#st').textContent='No ha arribat cap text.'; return false; }
-  var hit=heardSet.some(function(t){ return laxMatch(t,vK); });
-  $('#heard').innerHTML='<p class="v '+(hit?'ok':'ko')+'">'+(hit?'Acceptat':'No reconegut')+'</p><div class="alts">'+
-    heardSet.map(function(t){ return '<span class="'+(laxMatch(t,vK)?'hit':'')+'">'+t+'</span>'; }).join('')+'</div>';
-  $('#heard').hidden=false; $('#st').textContent='Escoltat.'; return hit;
-}
-function evaluate(my){
-  if(my!==sess || phase==='done') return;
-  phase='done'; clearTimeout(hardT); stopUI();
-  var hit=showVerdict();
-  entry={k:vK, alts:heardSet.slice(), ok:hit, dbg:'mode '+MODE+': '+trace.join(' ')}; LOG.unshift(entry); renderLog();
-}
-function modeBtns(){
-  Array.prototype.forEach.call(document.querySelectorAll('[data-mode]'), function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-mode')===MODE?'true':'false'); b.style.borderColor = b.getAttribute('data-mode')===MODE ? 'var(--accent)' : ''; });
-}
-document.addEventListener('click', function(e){ var b=e.target.closest('[data-mode]'); if(!b) return; MODE=b.getAttribute('data-mode'); store('mode',MODE); modeBtns(); });
-$('#rec').addEventListener('click', function(){
-  if(!SR) return;
-  if(phase==='rec'){ tr('usuari-atura'); try{ recog.stop(); }catch(e){ tr('stop-err'); } phase='wait'; $('#rec').textContent='… Processant'; hardT=setTimeout(function(){ tr('timeout'); evaluate(sess); }, 3000); return; }
-  if(phase==='wait') return;
-  try{
-    recog = new SR(); recog.lang='ja-JP';
-    if(MODE==='A'){ recog.continuous=false; recog.interimResults=false; }
-    else if(MODE==='B'){ recog.continuous=false; recog.interimResults=true; }
-    else { recog.continuous=true; recog.interimResults=true; }
-    recog.maxAlternatives=5;
-  }catch(e){ $('#st').textContent='No s\'ha pogut iniciar el reconeixement de veu.'; return; }
-  var my=++sess; phase='rec'; heardSet=[]; entry=null; trace=[]; t0=Date.now(); $('#heard').hidden=true;
-  ['start','audiostart','soundstart','speechstart','speechend','soundend','audioend','nomatch'].forEach(function(n){ recog['on'+n]=function(){ if(my===sess) tr(n); }; });
-  recog.onresult=function(ev){
-    if(my!==sess) return;
-    var last='';
-    for(var i=0;i<ev.results.length;i++){ var r=ev.results[i]; for(var j=0;j<r.length;j++){ addHeard(r[j].transcript); } last=r[0].transcript+(r.isFinal?'(F)':'(p)'); }
-    tr('result:'+last);
-    if(phase==='done' && entry){ entry.alts=heardSet.slice(); entry.ok=showVerdict(); entry.dbg='mode '+MODE+': '+trace.join(' '); renderLog(); }
-    else $('#st').textContent='Sentint: '+heardSet[heardSet.length-1];
+function openSheet(it){
+  $('#sheet').innerHTML='<div class="row1"><div id="sheetSv"></div>'+
+    '<div class="facts"><span class="ro">'+it.r+'</span><span class="kg" style="font-size:30px;line-height:1.2">'+it.k+'</span>'+(it.hint?'<span class="muted">'+it.hint+'</span>':'')+
+    '<span>'+it.st+' traç'+(it.st===1?'':'os')+'</span><div class="skills">'+skillLine(it.k,'rec','Reconèixer')+skillLine(it.k,'write','Escriure')+skillLine(it.k,'read','Llegir')+'</div></div></div>'+
+    '<div class="btns">'+(hasTTS?'<button class="ghostbtn" data-s="say">▶ Escolta</button>':'<button class="ghostbtn" data-s="close">Tanca</button>')+'<button class="primary" data-s="write">Escriu-lo</button></div>';
+  strokeViewer($('#sheetSv'), it.k, {autoplay:true, compact:true});
+  $('#backdrop').hidden=false;
+  $('#sheet').onclick=function(e){
+    var b=e.target.closest('[data-s]'); if(!b || b.closest('.sv')) return;
+    var a=b.getAttribute('data-s');
+    if(a==='say') speak(it.k); else if(a==='close') closeSheet(); else if(a==='write'){ closeSheet(); forced=it; show('escriu'); }
   };
-  recog.onerror=function(ev){ if(my!==sess) return; tr('error:'+ev.error); };
-  recog.onend=function(){ if(my!==sess) return; tr('end'); setTimeout(function(){ evaluate(my); }, 700); };
-  try{
-    recog.start(); listening=true; $('#rec').classList.add('on'); $('#rec').textContent='■ Atura';
-    $('#st').textContent='Escoltant… Digues el kana i espera. Toca Atura només si no s\'atura sol.';
-    hardT=setTimeout(function(){ if(phase==='rec'){ tr('max8s'); try{ recog.stop(); }catch(e){} phase='wait'; hardT=setTimeout(function(){ tr('timeout'); evaluate(my); }, 3000); } }, 8000);
-  }catch(e){ phase='idle'; stopUI(); $('#st').textContent='No s\'ha pogut accedir al micròfon: '+e.message; }
-});
-function renderLog(){
-  $('#log').hidden=!LOG.length;
-  $('#logb').innerHTML=LOG.map(function(l){ return '<tr><td>'+l.k+'</td><td>'+(l.alts.join(' · ')||'∅')+(l.dbg?'<div style="font-size:11px;color:var(--muted);font-family:var(--mono);word-break:break-all">'+l.dbg+'</div>':'')+'</td><td style="color:var(--'+(l.ok?'ok':'bad')+')">'+(l.ok?'✓':'✗')+'</td></tr>'; }).join('');
 }
-$('#copy').addEventListener('click', function(){
-  var txt=LOG.slice().reverse().map(function(l){ return l.k+' ('+ROMA[l.k]+') → '+(l.alts.join(' | ')||'∅')+' → '+(l.ok?'OK':'NO')+(l.dbg?' ['+l.dbg+']':''); }).join('\n');
-  var b=this;
-  function done(){ b.textContent='Copiat'; setTimeout(function(){ b.textContent='Copia el registre'; },1500); }
-  try{ navigator.clipboard.writeText(txt).then(done, function(){ b.textContent='No s\'ha pogut copiar'; }); }catch(e){ b.textContent='No s\'ha pogut copiar'; }
+function closeSheet(){ $('#backdrop').hidden=true; $('#sheet').innerHTML=''; }
+$('#backdrop').addEventListener('click', function(e){ if(e.target.id==='backdrop') closeSheet(); });
+
+/* ================= Gravació (Llegir) ================= */
+var canRecord=!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+function recordClip(ms, onState){
+  return navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    return new Promise(function(resolve, reject){
+      var chunks=[], mr;
+      try{ mr=new MediaRecorder(stream); }catch(e){ stream.getTracks().forEach(function(t){ t.stop(); }); reject(e); return; }
+      mr.ondataavailable=function(ev){ if(ev.data && ev.data.size) chunks.push(ev.data); };
+      mr.onstop=function(){ stream.getTracks().forEach(function(t){ t.stop(); }); resolve(new Blob(chunks, {type: mr.mimeType || 'audio/mp4'})); };
+      mr.start(); if(onState) onState(function(){ if(mr.state==='recording') mr.stop(); });
+      setTimeout(function(){ if(mr.state==='recording') mr.stop(); }, ms);
+    });
+  });
+}
+
+/* ================= Exercicis ================= */
+var LABELS={k2r:'Quin so és?', r2k:'Quin kana és?', type:'Escriu el romaji', read:'Llegeix-lo en veu alta', listen:'Escolta i tria', write:'Escriu-lo amb el dit'};
+var Q=null;
+function enabledTypes(){
+  var t=['rec','read','listen','write'].filter(function(x){ return S.types[x] && (x!=='listen' || hasTTS); });
+  return t.length ? t : ['rec'];
+}
+function renderSetup(){
+  var p=pool();
+  var rowsTxt=ROWS.filter(function(r){ return S.rows.indexOf(r.id)>=0; }).map(function(r){ return r.head; }).join(' ');
+  $('#poolline').innerHTML = p.length ? '<b>'+p.length+' kana</b> <span class="muted">de les files <span class="kg">'+rowsTxt+'</span></span>' : '<span class="muted">No hi ha cap fila triada. Tria-les a la Taula.</span>';
+  $$('#types .type').forEach(function(b){
+    var t=b.getAttribute('data-t');
+    if(t==='listen' && !hasTTS){ b.hidden=true; return; }
+    b.setAttribute('aria-pressed', S.types[t]?'true':'false');
+  });
+  $('#start').disabled=!p.length;
+}
+$('#types').addEventListener('click', function(e){ var b=e.target.closest('[data-t]'); if(!b) return; var t=b.getAttribute('data-t'); S.types[t]=!S.types[t]; save(); renderSetup(); });
+$('#start').addEventListener('click', function(){ startSession(pool(), 10); });
+function skillOf(type){ return type==='read' ? 'read' : type==='listen' ? 'listen' : type==='write' ? 'write' : 'rec'; }
+function startSession(p, n){
+  if(!p.length) return;
+  var types=enabledTypes(), list=[], last=null;
+  for(var i=0;i<n;i++){
+    var t=types[Math.floor(Math.random()*types.length)];
+    var it=pickWeighted(p, skillOf(t), last); last=it.k;
+    var mode=t;
+    if(t==='rec') mode = mastered(it.k,'rec') ? 'type' : (Math.random()<0.5 ? 'k2r' : 'r2k');
+    list.push({it:it, type:t, mode:mode});
+  }
+  Q={list:list, i:0, res:[]};
+  $('#setup').hidden=true; $('#quiz').hidden=false; renderQ();
+}
+function dotsHtml(){
+  return '<div class="dots">'+Q.list.map(function(_,i){ var c = i<Q.res.length ? (Q.res[i]?'ok':'ko') : (i===Q.i?'cur':''); return '<i class="'+c+'"></i>'; }).join('')+'</div>';
+}
+function renderQ(){
+  var q=Q.list[Q.i], it=q.it, host=$('#quiz'), h='';
+  h+='<div class="qtop">'+dotsHtml()+'<button class="quit" data-x="quit">Surt</button></div>';
+  h+='<p class="qlabel">'+LABELS[q.mode]+'</p>';
+  if(q.mode==='k2r'){
+    h+='<p class="qbig kg">'+it.k+'</p><div class="opts">'+shuffle([it].concat(distractors(it,3,'r'))).map(function(o){ return '<button class="opt r" data-o="'+o.k+'">'+o.r+'</button>'; }).join('')+'</div>';
+  } else if(q.mode==='r2k' || q.mode==='listen'){
+    if(q.mode==='r2k') h+='<p class="qro">'+it.r+'</p><p class="qhint">'+(it.hint||'&nbsp;')+'</p>';
+    else h+='<button class="play" data-x="say">▶ Torna a escoltar</button>';
+    h+='<div class="opts">'+shuffle([it].concat(distractors(it,3,'r'))).map(function(o){ return '<button class="opt k" data-o="'+o.k+'">'+o.k+'</button>'; }).join('')+'</div>';
+  } else if(q.mode==='type'){
+    h+='<p class="qbig kg">'+it.k+'</p><p class="qhint">Ja el domines: sense opcions</p>'+
+      '<form class="typein" id="typeForm"><input id="romajiIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="latin" placeholder="ka" aria-label="Romaji"><button class="primary" type="submit">Comprova</button></form><p class="errline" id="typeErr" hidden></p>';
+  } else if(q.mode==='read'){
+    h+='<p class="qbig kg">'+it.k+'</p><div id="readHost"></div>';
+  } else if(q.mode==='write'){
+    h+='<p class="qro">'+it.r+'</p><p class="qhint">'+(it.hint||'&nbsp;')+'</p><div id="qw"></div>';
+  }
+  h+='<div class="after" id="after" hidden></div>';
+  host.innerHTML=h;
+  if(q.mode==='listen') speak(it.k);
+  if(q.mode==='write') mountWriter($('#qw'), it, {trace:false, onNext:function(ok){ Q.res.push(ok); advance(); }});
+  if(q.mode==='type'){
+    var inp=$('#romajiIn'); setTimeout(function(){ try{ inp.focus(); }catch(e){} }, 50);
+    inp.addEventListener('input', function(){ $('#typeErr').hidden=true; });
+    $('#typeForm').addEventListener('submit', function(e){
+      e.preventDefault(); if(inp.disabled) return;
+      if(!inp.value.trim()){ $('#typeErr').textContent='Escriu el romaji abans de comprovar.'; $('#typeErr').hidden=false; return; }
+      var ok=romajiOK(it, inp.value); inp.disabled=true; inp.classList.add(ok?'right':'wrong');
+      finishQ(ok, ok ? 'Correcte' : 'És '+it.r);
+    });
+  }
+  if(q.mode==='read') mountRead($('#readHost'), it);
+  window.scrollTo(0,0);
+}
+function finishQ(ok, msg){
+  var q=Q.list[Q.i]; record(q.it.k, skillOf(q.type), ok); Q.res.push(ok);
+  var af=$('#after');
+  af.innerHTML='<p class="verdict '+(ok?'ok':'ko')+'">'+msg+'</p><button class="primary" data-x="next">Següent</button>';
+  af.hidden=false;
+  if(q.mode!=='listen' && q.mode!=='read' && hasTTS) speak(q.it.k);
+}
+function mountRead(host, it){
+  var clipUrl=null;
+  function stage1(){
+    host.innerHTML='<p class="qhint">Digues-lo en veu alta. Si vols, grava\'t per comparar-te amb la pronunciació correcta.</p><div class="stack">'+
+      (canRecord ? '<button class="pill" data-r="rec" style="align-self:center">● Grava\'t</button>' : '')+
+      '<button class="primary" data-r="reveal">Comprova</button></div><p class="errline" data-r="err" hidden></p>';
+  }
+  function stage2(){
+    host.innerHTML='<div class="reveal"><span class="ro">'+it.r+'</span>'+(it.hint?'<div class="muted" style="font-size:13px">'+it.hint+'</div>':'')+'</div>'+
+      '<div class="playrow">'+(hasTTS?'<button class="pill" data-r="ref">▶ Correcta</button>':'')+(clipUrl?'<button class="pill" data-r="mine">▶ La teva veu</button>':'')+'</div>'+
+      '<p class="qhint">Com ha anat?</p><div class="row2"><button class="kobtn" data-r="ko">M\'he equivocat</button><button class="okbtn" data-r="ok">L\'he encertat</button></div>';
+    if(hasTTS) speak(it.k);
+  }
+  host.onclick=function(e){
+    var b=e.target.closest('[data-r]'); if(!b) return;
+    var a=b.getAttribute('data-r');
+    if(a==='rec'){
+      if(b.classList.contains('recon')){ if(b._stop) b._stop(); return; }
+      b.classList.add('recon'); b.textContent='■ Gravant… toca per aturar';
+      recordClip(3000, function(stop){ b._stop=stop; }).then(function(blob){
+        if(clipUrl){ try{ URL.revokeObjectURL(clipUrl); }catch(e){} }
+        clipUrl=URL.createObjectURL(blob); stage2();
+      }, function(){
+        b.classList.remove('recon'); b.textContent='● Grava\'t';
+        var er=host.querySelector('[data-r="err"]'); er.textContent='No s\'ha pogut fer servir el micròfon. Pots continuar sense gravar-te.'; er.hidden=false;
+      });
+    }
+    else if(a==='reveal') stage2();
+    else if(a==='ref') speak(it.k);
+    else if(a==='mine'){ try{ new Audio(clipUrl).play(); }catch(e){} }
+    else if(a==='ok' || a==='ko'){ host.onclick=null; host.innerHTML=''; finishQ(a==='ok', a==='ok' ? 'Anotat com a encert' : 'Anotat per repassar'); }
+  };
+  stage1();
+}
+$('#quiz').addEventListener('click', function(e){
+  var x=e.target.closest('[data-x]');
+  if(x){
+    var a=x.getAttribute('data-x');
+    if(a==='say') speak(Q.list[Q.i].it.k);
+    else if(a==='quit') endQuiz();
+    else if(a==='next') advance();
+    else if(a==='again') startSession(pool(),10);
+    else if(a==='misses') startSession(Q.missed, Math.min(10, Math.max(4, Q.missed.length*2)));
+    else if(a==='done') endQuiz();
+    return;
+  }
+  var o=e.target.closest('[data-o]'); if(!o || o.disabled) return;
+  var q=Q.list[Q.i], it=q.it, chosen=BY_K[o.getAttribute('data-o')];
+  var ok=chosen.k===it.k || chosen.r===it.r;
+  $$('#quiz .opt').forEach(function(b){
+    b.disabled=true; var bk=BY_K[b.getAttribute('data-o')];
+    if(bk.k===it.k) b.classList.add('right'); else if(bk.k===chosen.k) b.classList.add('wrong');
+  });
+  finishQ(ok, ok ? 'Correcte' : 'És '+it.k+' · '+it.r);
+});
+function advance(){
+  Q.i++;
+  if(Q.i<Q.list.length){ renderQ(); return; }
+  var ok=Q.res.filter(Boolean).length, seen={}, missed=[];
+  Q.list.forEach(function(q,i){ if(!Q.res[i] && !seen[q.it.k]){ seen[q.it.k]=1; missed.push(q.it); } });
+  Q.missed=missed;
+  var h='<div class="panel"><p class="qlabel">Ronda acabada</p><p class="score">'+ok+'/'+Q.list.length+'</p>';
+  h+= missed.length ? '<p class="qhint">Per repassar</p><div class="misses">'+missed.map(function(it){ return '<div class="miss"><b>'+it.k+'</b><span>'+it.r+'</span></div>'; }).join('')+'</div>'
+                    : '<p class="qhint">Cap error. Pots afegir una fila nova a la Taula.</p>';
+  h+='<div class="stack">'+(missed.length?'<button class="primary" data-x="misses">Repassa les fallades</button><button class="ghostbtn" data-x="again">Una altra ronda</button>':'<button class="primary" data-x="again">Una altra ronda</button>')+
+     '<button class="linkish" data-x="done">Torna a la configuració</button></div></div>';
+  $('#quiz').innerHTML=h; renderSub(); window.scrollTo(0,0);
+}
+function endQuiz(){ Q=null; $('#quiz').hidden=true; $('#quiz').innerHTML=''; $('#setup').hidden=false; renderSetup(); }
+
+/* ================= Escriu ================= */
+var forced=null, lastW=null;
+function renderWrite(){
+  var host=$('#writeHost'), p=pool();
+  var it=forced || (p.length ? pickWeighted(p,'write',lastW) : null);
+  forced=null;
+  if(!it){ host.innerHTML='<div class="panel"><p class="muted" style="margin:0">No hi ha cap fila triada. Tria-les a la Taula per començar a escriure.</p></div>'; return; }
+  lastW=it.k;
+  host.innerHTML='<p class="qro">'+it.r+'</p><p class="qhint">'+it.st+' traç'+(it.st===1?'':'os')+(it.hint?' · '+it.hint:'')+'</p>'+
+    '<div class="wtop"><button class="toggle" id="traceT" aria-pressed="'+S.trace+'">Model de fons</button><button class="toggle" id="orderT" aria-pressed="false">Mostra l\'ordre</button>'+(hasTTS?'<button class="toggle" id="sayT">▶ Escolta</button>':'')+'</div>'+
+    '<div class="orderbox" id="orderBox" hidden></div><div id="ww" style="margin-top:8px"></div>'+
+    '<div style="text-align:center;margin-top:10px"><button class="linkish" id="skipW">Salta\'l</button></div>';
+  var w=mountWriter($('#ww'), it, {trace:S.trace, onNext:function(){ renderSub(); renderWrite(); window.scrollTo(0,0); }});
+  $('#traceT').onclick=function(){ S.trace=!S.trace; save(); this.setAttribute('aria-pressed', S.trace?'true':'false'); w.setTrace(S.trace); };
+  $('#orderT').onclick=function(){
+    var ob=$('#orderBox'), on=ob.hidden; ob.hidden=!on; this.setAttribute('aria-pressed', on?'true':'false');
+    if(on) strokeViewer(ob, it.k, {autoplay:true});
+  };
+  if($('#sayT')) $('#sayT').onclick=function(){ speak(it.k); };
+  $('#skipW').onclick=function(){ renderWrite(); };
+}
+
+/* ================= Paraules ================= */
+var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+function kata2hira(s){ return s.replace(/[ァ-ヶ]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-0x60); }); }
+function normJ(s){ return kata2hira(String(s||'')).replace(/[\s、。，．,.!！?？「」『』・〜~]/g,'').replace(/ー/g,''); }
+function lev(a,b){
+  if(!a.length) return b.length; if(!b.length) return a.length;
+  var prev=[], i, j; for(j=0;j<=b.length;j++) prev.push(j);
+  for(i=1;i<=a.length;i++){ var cur=[i]; for(j=1;j<=b.length;j++) cur[j]=Math.min(cur[j-1]+1, prev[j]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1)); prev=cur; }
+  return prev[b.length];
+}
+function wordScore(heard, W){
+  var h=normJ(heard); if(!h) return 0;
+  var best=0;
+  W.forms.forEach(function(f){
+    var t=normJ(f); if(!t) return;
+    if(h===t) best=Math.max(best,100);
+    else if(h.indexOf(t)>=0 && h.length<=t.length+4) best=Math.max(best,95);
+    else { var s=Math.round((1-lev(h,t)/Math.max(h.length,t.length))*100); if(s>best) best=s; }
+  });
+  return best;
+}
+function wordRomaji(w){
+  var out='', i=0;
+  for(i=0;i<w.length;i++){ var it=BY_K[w[i]]; out+= it ? it.r : w[i]; }
+  return out;
+}
+function availableWords(){
+  return WORDS.filter(function(W){ for(var i=0;i<W.w.length;i++){ if(!mastered(W.w[i],'rec')) return false; } return true; });
+}
+var wordState={cur:null, last:null, rec:null, phase:'idle', heard:[], best:0, timer:null};
+function stopWordRec(){
+  var r=wordState.rec; wordState.rec=null; clearTimeout(wordState.timer);
+  if(r){ try{ r.onresult=r.onerror=r.onend=null; }catch(e){} try{ r.stop(); }catch(e){} try{ r.abort(); }catch(e){} }
+}
+function renderWords(){
+  stopWordRec();
+  var host=$('#wordsHost'), u=unlockedCount();
+  if(u<UNLOCK){
+    host.innerHTML='<div class="panel"><p class="eyebrow">🔒 Paraules</p><p style="margin:0 0 4px"><b>Llegeix paraules reals amb el micròfon.</b></p>'+
+      '<p class="muted" style="margin:0;font-size:14px">Es desbloqueja quan dominis '+UNLOCK+' dels 46 kana bàsics a Reconèixer i a Escriure.</p>'+
+      '<div class="bigmeter"><i style="width:'+Math.round(u/UNLOCK*100)+'%"></i></div><p style="margin:0;font-variant-numeric:tabular-nums"><b>'+u+'</b> de '+UNLOCK+'</p>'+
+      '<div class="lockgrid">'+BASIC.map(function(it){ var d=mastered(it.k,'rec') && mastered(it.k,'write'); return '<span class="'+(d?'done':'')+'" title="'+it.r+'">'+it.k+'</span>'; }).join('')+'</div></div>';
+    return;
+  }
+  var av=availableWords();
+  if(!av.length){ host.innerHTML='<div class="panel"><p style="margin:0">Encara no hi ha cap paraula feta només amb kana que dominis a Reconèixer. Continua practicant i aniran apareixent.</p></div>'; return; }
+  var pick=av.filter(function(W){ return W.w!==wordState.last; }); if(!pick.length) pick=av;
+  var tot=0, ws=pick.map(function(W){ var s=S.words[W.w]||{ok:0,ko:0}; var w=Math.max(0.3, 2+s.ko-s.ok*0.6); tot+=w; return w; }), x=Math.random()*tot, W=pick[pick.length-1];
+  for(var i=0;i<pick.length;i++){ x-=ws[i]; if(x<=0){ W=pick[i]; break; } }
+  wordState.cur=W; wordState.last=W.w; wordState.heard=[]; wordState.best=0; wordState.phase='idle';
+  host.innerHTML='<p class="qlabel">'+av.length+' paraules disponibles de '+WORDS.length+'</p><div class="panel">'+
+    '<p class="word kg">'+W.w+'</p><p class="qhint">Llegeix-la en veu alta</p><div id="wArea" class="stack">'+
+    (SR ? '<button class="primary" data-w="mic">🎤 Llegeix-la</button>' : '<p class="note" style="margin:0 0 4px;text-align:center">El micròfon funciona a la versió de GitHub amb Safari. Aquí pots autoavaluar-te.</p>')+
+    '<button class="ghostbtn" data-w="reveal">Mostra la resposta</button></div></div>'+
+    '<div style="text-align:center;margin-top:10px"><button class="linkish" data-w="skip">Una altra paraula</button></div>';
+}
+function wordReveal(result){
+  stopWordRec();
+  var W=wordState.cur, area=$('#wArea'); if(!area) return;
+  var heard=wordState.heard.length ? '<div class="heardbox">He sentit:<div class="alts">'+wordState.heard.map(function(t){ return '<span class="'+(wordScore(t,W)>=80?'hit':'')+'">'+t+'</span>'; }).join('')+'</div></div>' : '';
+  var h='<div class="reveal"><span class="ro">'+wordRomaji(W.w)+'</span></div><p class="meaning">'+W.m+'</p>'+
+    (hasTTS?'<div class="playrow" style="margin-top:10px"><button class="pill" data-w="say">▶ Escolta-la</button></div>':'');
+  if(result==='ok'){
+    h+='<p class="verdict ok">Correcte</p>'+heard+'<button class="primary" data-w="next">Següent</button>';
+    var s=S.words[W.w]||{ok:0,ko:0}; s.ok++; S.words[W.w]=s; save();
+  } else {
+    h+=(result==='miss' ? '<p class="verdict ko">No t\'he entès bé</p>'+heard+'<p class="note" style="text-align:center;margin:0">El reconeixement no és perfecte. Escolta-la i decideix tu.</p>' : '')+
+       '<div class="row2"><button class="kobtn" data-w="ko">M\'he equivocat</button><button class="okbtn" data-w="ok">L\'he dit bé</button></div>';
+  }
+  area.innerHTML=h;
+  if(hasTTS && result!=='ok') setTimeout(function(){ speak(W.w,0.85); }, 200);
+}
+function startWordRec(btn){
+  if(!SR) return;
+  stopWordRec();
+  var rec; try{ rec=new SR(); rec.lang='ja-JP'; rec.interimResults=true; rec.continuous=true; rec.maxAlternatives=3; }catch(e){ return; }
+  wordState.rec=rec; wordState.phase='rec'; wordState.heard=[];
+  btn.textContent='■ Atura'; btn.classList.add('recon');
+  if(window.speechSynthesis) try{ window.speechSynthesis.cancel(); }catch(e){}
+  function conclude(){ if(wordState.phase!=='rec') return; wordState.phase='done'; var W=wordState.cur; var ok=wordState.heard.some(function(t){ return wordScore(t,W)>=80; }); wordReveal(ok?'ok':'miss'); }
+  rec.onresult=function(ev){
+    if(wordState.rec!==rec) return;
+    for(var i=0;i<ev.results.length;i++){ var r=ev.results[i]; var whole=''; for(var j=0;j<r.length;j++){ var t=String(r[j].transcript||'').trim(); if(t && wordState.heard.indexOf(t)<0) wordState.heard.push(t); } }
+    var all=''; for(var k=0;k<ev.results.length;k++) all+=ev.results[k][0].transcript; all=all.trim(); if(all && wordState.heard.indexOf(all)<0) wordState.heard.push(all);
+    if(wordState.heard.some(function(t){ return wordScore(t,wordState.cur)>=80; })) conclude();
+  };
+  rec.onerror=function(ev){ if(wordState.rec!==rec) return; if(ev.error==='not-allowed' || ev.error==='service-not-allowed'){ wordState.phase='done'; wordReveal('miss'); } };
+  rec.onend=function(){ if(wordState.rec!==rec) return; conclude(); };
+  try{ rec.start(); }catch(e){ wordState.phase='done'; wordReveal('miss'); return; }
+  wordState.timer=setTimeout(conclude, 6000);
+  btn._conclude=conclude;
+}
+$('#wordsHost').addEventListener('click', function(e){
+  var b=e.target.closest('[data-w]'); if(!b) return;
+  var a=b.getAttribute('data-w');
+  if(a==='mic'){ if(wordState.phase==='rec'){ if(b._conclude) b._conclude(); } else startWordRec(b); }
+  else if(a==='reveal'){ wordState.phase='done'; wordReveal('self'); }
+  else if(a==='say') speak(wordState.cur.w,0.85);
+  else if(a==='ok' || a==='ko'){ var s=S.words[wordState.cur.w]||{ok:0,ko:0}; if(a==='ok') s.ok++; else s.ko++; S.words[wordState.cur.w]=s; save(); renderWords(); }
+  else if(a==='next' || a==='skip') renderWords();
 });
 
-setTarget(target); setV(vK); setupPad(); modeBtns();
-fontReady.then(function(){ setTimeout(build, 300); });
+/* ================= Navegació ================= */
+function show(v){
+  if(v!=='paraules') stopWordRec();
+  ['taula','ex','escriu','paraules'].forEach(function(x){ $('#v-'+x).hidden = x!==v; });
+  $$('.tab').forEach(function(t){ t.setAttribute('aria-selected', t.getAttribute('data-v')===v?'true':'false'); });
+  if(v==='taula') renderChart();
+  if(v==='ex' && !Q) renderSetup();
+  if(v==='escriu') renderWrite();
+  if(v==='paraules') renderWords();
+  window.scrollTo(0,0);
+}
+document.querySelector('.tabs').addEventListener('click', function(e){ var t=e.target.closest('[data-v]'); if(t) show(t.getAttribute('data-v')); });
+
+applyFont();
+renderChart();
+if(!S.font) openOnb();
+fontsReady.then(function(){ setTimeout(buildTemplates, 500); });
+if('serviceWorker' in navigator && window.isSecureContext && !/claude\.(ai|site)|claudeusercontent/.test(location.hostname)){
+  try{ navigator.serviceWorker.register('sw.js').then(function(){}, function(){}); }catch(e){}
+}
 })();
 </script>
 
