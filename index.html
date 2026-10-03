@@ -230,6 +230,15 @@ h1{margin:0;font-size:20px;font-weight:700;line-height:1.2}
 .fchoice span{font-size:13.5px;color:var(--muted);line-height:1.45}
 .credit{font-size:11.5px;color:var(--muted);margin-top:28px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+.btnrow{display:flex;gap:8px;margin-top:22px}
+.btnrow button{flex:1}
+.ghostbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;font-weight:500;font-size:15px;padding:12px 14px;font-family:inherit}
+.expbox{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.expbox p{margin:0 0 8px;font-size:13px;color:var(--muted);line-height:1.45}
+.expbox textarea{width:100%;box-sizing:border-box;height:96px;border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:8px;font-family:var(--mono);font-size:11px;color:var(--ink);resize:none}
+.expbox .btns2{display:flex;gap:8px;margin-top:8px}
+.expbox .btns2>*{flex:1;text-align:center}
+.expbox+.danger{margin-top:16px}
 </style>
 </head>
 <body>
@@ -261,6 +270,12 @@ h1{margin:0;font-size:20px;font-weight:700;line-height:1.2}
       <span><i class="dot lv-ok"></i>Dominat</span>
     </div>
     <p class="note">Un kana queda dominat quan l'encertes 3 cops seguits a Reconèixer i 3 cops seguits a Escriure. Toca el nom d'una fila per incloure-la o treure-la. Toca un kana per veure'n l'ordre dels traços.</p>
+    <div class="btnrow"><button class="ghostbtn" id="exp">Exporta el progrés</button></div>
+    <div class="expbox" id="expBox" hidden>
+      <p id="expMsg"></p>
+      <textarea id="expTxt" readonly spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+      <div class="btns2"><button class="ghostbtn" id="expCopy">Copia</button><button class="ghostbtn" id="expFile">Desa com a fitxer</button><button class="ghostbtn" id="expClose">Tanca</button></div>
+    </div>
     <button class="danger" id="reset">Esborra el progrés</button>
   </section>
 
@@ -1191,6 +1206,58 @@ fontsReady.then(function(){ setTimeout(buildTemplates, 500); });
 if('serviceWorker' in navigator && window.isSecureContext && !/claude\.(ai|site)|claudeusercontent/.test(location.hostname)){
   try{ navigator.serviceWorker.register('sw.js').then(function(){}, function(){}); }catch(e){}
 }
+
+/* ================= Exporta el progrés (format de Kana al dit) ================= */
+function exportText(){
+  var d=new Date(), pad=function(n){ return (n<10?'0':'')+n; };
+  var stamp=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+  var data={script:'H', font:S.font||null, trace:S.trace!==false, types:S.types, wtypes:{read:true,romaji:true,kana:true},
+    H:{rows:S.rows, st:S.st||{}, words:S.words||{}}, K:{rows:['a','ka','sa'], st:{}, words:{}}};
+  return JSON.stringify({app:'kana-al-dit', fmt:1, date:stamp, data:data});
+}
+function copyText(t, ta, done){
+  function fallback(){
+    try{ ta.focus(); ta.setSelectionRange(0, t.length); var ok=document.execCommand('copy'); done(!!ok); }catch(e){ done(false); }
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ done(true); }, fallback); }
+    else fallback();
+  }catch(e){ fallback(); }
+}
+function fileStamp(){ var d=new Date(), p2=function(n){ return (n<10?'0':'')+n; }; return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }
+function shareFile(text, name, cb){
+  try{
+    var f=new File([text], name, {type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[f]}) && navigator.share){
+      navigator.share({files:[f], title:'Progrés de Hiragana al dit'}).then(function(){ cb('ok'); }, function(e){ cb(e && e.name==='AbortError' ? 'cancel' : 'fail'); });
+      return;
+    }
+  }catch(e){}
+  try{
+    var blob=new Blob([text], {type:'application/json'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); try{ URL.revokeObjectURL(url); }catch(e){} }, 1500);
+    cb('download');
+  }catch(e2){ cb('fail'); }
+}
+$('#exp').addEventListener('click', function(){
+  var t=exportText(); $('#expTxt').value=t; $('#expBox').hidden=false;
+  $('#expMsg').textContent='Copiant…';
+  copyText(t, $('#expTxt'), function(ok){
+    $('#expMsg').textContent = ok ? 'Progrés copiat. Enganxa\'l a Notes, o desa\'l com a fitxer. Després l\'importaràs a Kana al dit.' : 'No s\'ha pogut copiar sol. Toca el text, selecciona-ho tot i copia, o desa\'l com a fitxer.';
+    if(!ok){ try{ $('#expTxt').focus(); $('#expTxt').setSelectionRange(0, t.length); }catch(e){} }
+  });
+});
+$('#expCopy').addEventListener('click', function(){
+  var t=$('#expTxt').value; copyText(t, $('#expTxt'), function(ok){ $('#expMsg').textContent = ok ? 'Copiat.' : 'No s\'ha pogut copiar sol. Toca el text, selecciona-ho tot i copia.'; });
+});
+$('#expFile').addEventListener('click', function(){
+  var t=$('#expTxt').value;
+  shareFile(t, 'hiragana-al-dit-progres-'+fileStamp()+'.json', function(r){
+    $('#expMsg').textContent = r==='ok' ? 'Fitxer compartit. Desa\'l a Fitxers.' : r==='cancel' ? 'Cancel·lat.' : r==='download' ? 'Descàrrega iniciada. Si no veus el fitxer, fes servir Copia.' : 'No s\'ha pogut crear el fitxer. Fes servir Copia.';
+  });
+});
+$('#expClose').addEventListener('click', function(){ $('#expBox').hidden=true; $('#expTxt').value=''; });
 })();
 </script>
 
